@@ -1,0 +1,103 @@
+{OLD
+@0 0
+#      ***                                             *     *  *****       *
+#     *  *                                             *     * *    **     **
+#    *   *   ***  *****  ***  ****   ***  ****         *     * *   * *    * *
+#    *   *  *   * *     *   * *   * *   * *   * ****** *     * *  *  *      *
+#    *   *  *   * *     *   * ****  *   * ****          *   *  * *   *      *
+#   ******* *   * *     *   * *   * *   * *              * *   **    * **   *
+#   *     *  ***  *      ***  ****   ***  *               *     *****  **  ***
+N договора [       ]:$Dog
+редакция  :<red
+печать    :<form
+расчет    :<calc
+посмотреть:ls -F
+договора  :grep -E 'service|12\|' */dog */dog.app | more
+создать   :(mkdir $Dog) && (cp $An/zad $An/plan  $An/dop  $An/acc.txt $An/dog $Dog )
+установки :<-set
+Load LaserJet: ljfun load lg10 port lg10
+}
+{OLD:red
+@0 0
+#                       *****  ****** ****
+#                       *    * *      *   *
+#                       *    * *      *    *
+#                       *****  ****   *    *
+#                       *  *   *      *    *
+#                       *   *  *      *   *
+#                       *    * ****** ****
+договор:                re $Dog/dog.app
+техническое задание:    re $Dog/zad
+календарный план:       re $Dog/plan
+доп. информация:        re $Dog/dop
+акт:                    re txt/$Akt
+актSop:                 re $Dog/$Akt
+доп. информация:        re $Dog/dop
+счет:                   re $Dog/acc.txt
+счет в долларах:        re $Dog/accDol.txt
+накладная:              re $Dog/$Nakl
+счет-фактура:           re $Dog/acc-fac.txt
+исполнители:            re txt/man.dat
+контора:                re txt/$Firm
+печать:<form
+предыдущее меню:<PRED
+}
+{OLD:form
+@0 0
+#
+#                       Оформление договоров.
+#
+#setenv A  c 0
+setenv A    "j"
+предыдущее меню:<PRED
+договор:          anc $A d txt a $Dog/dog.app k $Firm < $Dog/$Tdog       | $LP
+протокол о цене:  anc $A d txt a $Dog/dog.app k $Firm < txt/sal.txt      | $LP
+счет:             anc $A d txt a $Dog/dog.app k $Firm < $Dog/acc.txt     | $LP
+счет в долларах:  anc $A d txt a $Dog/dog.app k $Firm < $Dog/accDol.txt  | $LP
+накладная:        anc $A d txt a $Dog/dog.app k $Firm < $Dog/$Nakl       | $LP
+счет-фактура:     anc $A d txt a $Dog/dog.app k $Firm < $Dog/acc-fac.txt | $LP
+актSop:anc $A d txt a $Dog/dog.app k $Firm < $Dog/$Akt        | $LP
+т/з:              anc $A d txt a $Dog/dog.app k $Firm < $Dog/zad         | $LP
+календарный план: anc $A d txt a $Dog/dog.app k $Firm < $Dog/plan        | $LP
+доп. file:        anc $A d txt a $Dog/dog.app k $Firm < $Dog/dop         | $LP
+подряд с ВТК:     anc j c 2 d txt a $Dog/dog.app v k $Firm < txt/podr.txt   | $LP
+протокол ВТК:     anc j c 2 d txt a $Dog/dog.app   k $Firm < txt/prot.txt   | $LP
+анкеты на всех:   anc j c 2 d txt a $Dog/dog.app z k $Firm < txt/anketa.txt | $LP
+бланк анкеты  :   anc j c 2 d txt a $Dog/dog.app   k $Firm < txt/an-ta.txt  | $LP
+анкета индивидуальная:  anc j c 2 d txt a $Dog/dog m $Fio k $Firm  < txt/anketa.txt  |  $Lp
+б/д исполнителей:grep \# txt/man.dat | cat -n | more
+установки :<-set
+}
+{OLD:calc
+@0 0
+#
+#                       Расчет заработной платы
+#
+Предыдущее меню:<PRED
+Изменение договора: red $Dog/dog
+Начисления:date;   anc ktda  $Firm txt $Dog/dog
+З/П:date;          anc kdas  $Firm txt $Dog/dog el.dat > dd
+Печать начислений: anc ktda  $Firm txt $Dog/dog        | $Lp
+Печать З/П:        anc kdas  $Firm txt $Dog/dog el.dat | $Lp
+Load LaserJet lg8: loadfont -l lg08 ; ljland 4080 ; ljline 8
+Год        [  ]:$Ye
+Корректировка графика работ: red txt/graf_$Ye
+Расчет на группу: echo "Не забудьте сделать запись в tbl командой T" ; sleep 1 ;sc txt/sal_$Ye
+Печать графика работ: cat txt/graf_$Ye tbl | tbl | nroff | col | $Lp
+}
+{OLD:set
+@50 10
+#
+#  Текущие установки
+#
+Предыдущее меню:<PRED
+N договора  [              ]:$Dog
+dog.txt     [              ]:$Tdog
+akt         [              ]:$Akt
+nakl        [              ]:$Nakl
+Печать      [              ]:$LP
+Аналог      [              ]:$An
+Программа   [              ]:$pr
+Фамилия     [              ]:$Fio
+Фирма       [              ]:$Firm
+}
