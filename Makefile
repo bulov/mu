@@ -31,13 +31,13 @@ CFLAGS        =  -g -DM_TERMINFO
 
 LIBS          =  dp_io.new/dp_io.a -lcurses\
 #
-LIBS          =   -lcurses
+LIBS          =   -lcursesw
 
 
 #LINKER        =    gcc
-LINKER        =    cc
+LINKER        =    gcc
 
-CC            =    cc
+CC            =    gcc
 
 MAKEFILE      = Makefile
 
