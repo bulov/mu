@@ -71,6 +71,7 @@ char    head[] = "\n\
 #include <fcntl.h>
 #include <sys/syslog.h>
 #include <ctype.h>
+#include <locale.h>
 #define BACK    1			/* отступ влево для пометки       */
 #define MARK    '>'			/* символ пометки */
 #define unify( c) ( ((c) & ~0240 ) & 0377 )
@@ -84,6 +85,7 @@ int     Ks;
 extern  int kioutf;
 extern  int Red;
 int     Stop;
+WINDOW  *Win;
 Null()
 {
 }
@@ -91,7 +93,6 @@ int (*DPR_CLEAN)();
 /*
 *+ main()       Головной модуль
 */
-//#include <locale.h>
 main (argc, argv)
 	int             argc;		/* Character pointers to and count */
 	char          **argv;		/* pk->command line arguments */
@@ -101,7 +102,8 @@ main (argc, argv)
 	char           *cp;		/* char pointer */
 	char           *file = "prot.u";
 
-//        setlocale(LC_ALL, "ru_RU.UTF-8");
+	setlocale(LC_ALL, "ru_RU.UTF-8");
+	initscr();
 	for (argv++, argc--;(cp = *argv) != NULL; argv++, argc--) {
 		while (*cp != 0 ) {
 			switch (*cp++) {
