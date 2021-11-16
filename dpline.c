@@ -1,25 +1,26 @@
+#include "mu.h"
 #include "tty.h"
 #include <ctype.h>
 #include <stdio.h>
+#include <string.h>
 #define AMONG "  "
 #define MAXATMENU 15
 int             dplin_key;		/* нажатая кнопка */
 
-dpline( x,y, list ,list2 ){
-       help( x,y, list ,list2, -1 );
+int dpline( int x, int y, char **list ,char **list2 ){
+       return(help( x,y, list ,list2, -1 ));
 }
 
-help (x, y, list, list2, key)		/* if ( key ) - только нарисовать */
-	char          **list;		/* строка, по которой происходит выбор */
-	char          **list2;		/* строка - подсказка. Выдается в строке y-1 */
-{
+//        /* if ( key ) - только нарисовать */
+//        char          **list;           /* строка, по которой происходит выбор */
+//        char          **list2;          /* строка - подсказка. Выдается в строке y-1 */
+int help (int x,int y,char **list,char **list2,int key){
 	register int    chosen, atlist;
 	register char **L;
 	char          **tryfind;
 	int             Position[MAXATMENU];
 	register int    xchosen;
 	int             c, xt, yt, xtold;
-
 RESTART:
 	xtold = 0;
 	dpp (x, y);
@@ -46,7 +47,7 @@ RESTART:
 	chosen = 0;			/* CHOISE */
 	L = list;
 	if (!key)			/* bvg */
-		return;			/* bvg */
+		return(0);                 /* bvg */
 	while (1) {
 		if (list2 != NULL) {	/* Выдать подсказку */
 			xt = (Position[chosen]) +

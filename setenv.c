@@ -12,56 +12,38 @@ extern char   **environ;
 /*
 *+ blklen (), blkcpy (), blkend (), blkcat (), strspl ()
 */
-blklen (av)
-	register char **av;
-{
+int blklen (register char **av){
 	register int i = 0;
 
 	while (*av++)
 		i++;
 	return (i);
 }
-char          **
-blkcpy (oav, bv)
-	char          **oav;
-	register char **bv;
-{
+char **blkcpy (char **oav,register char ** bv){
 	register char **av = oav;
 
 	while (*av++ = *bv++);
 	return (oav);
 }
-char          **
-blkend (up)
-	register char **up;
-{
+char **blkend (register char **up){
 
 	while (*up)
 		up++;
 	return (up);
 }
-char          **
-blkcat (up, vp)
-	char          **up, **vp;
-{
+char **blkcat (char **up,char **vp){
 
 	(void) blkcpy (blkend (up), vp);
 	return (up);
 }
-char          **
-blkspl (up, vp)
-	register char **up, **vp;
-{
+char **blkspl (register char **up,register char **vp){
 	register char **wp = (char **) malloc ((unsigned)
 		((blklen (up) + blklen (vp) + 1)) * sizeof (char **));
 
 	(void) blkcpy (wp, up);
 	return (blkcat (wp, vp));
 }
-char           *
-strspl (cp, dp)
-	char           *cp, *dp;
-{
+char *strspl (char *cp,char *dp){
 	char           *ep;
 	register char  *p, *q;
 
@@ -73,12 +55,10 @@ strspl (cp, dp)
 	return (ep);
 }
 /*
-*+ setenv()     Установить в окружение title=val
+*+ setenvMy()     Установить в окружение title=val
 *+              не работает рекурсия path=$path/usr/bin; ???? bvg
 */
-setenv (b_name, b_val)
-	char           *b_name, *b_val;
-{
+void setenvMy (char *b_name,char *b_val){
 extern char   **environ;
 	register char **ep = environ;
 	register char  *cp, *dp;
@@ -109,13 +89,9 @@ extern char   **environ;
 	blk[1] = 0;
 	environ = blkspl (environ, blk);
 //        FREE ((char *) oep);
-	setenv (name, val);
+	setenv (name, val,1);
 }
-/*
-*+ mu_set()     Извлеч и сохранить внешние переменные
-*/
-mu_set(key)
-{
+void mu_set(int key){      //  *+ mu_set()     Извлеч и сохранить внешние переменные
 	register char **ep = environ;
 	register char  *cp, *dp;
 	int             i;
@@ -126,7 +102,7 @@ mu_set(key)
 
 	fp = NULL;
 	if(key){        /* Начало работы */
-		setenv (Name, Name);
+		setenv (Name, Name, 1);
 			if ((fp = fopen (Setenv, "r")) != NULL) {
 			while (fgets (buf, L_SIZ, fp) != NULL) {
 				if (!(i = strlen (buf)))
@@ -136,7 +112,7 @@ mu_set(key)
 				val = index (buf, '=');
 				if( val != 0 ){
 				   *val = '\0';
-				   setenv (buf, val + 1);
+				   setenv (buf, val + 1, 1);
 				}
 			}
 			fclose (fp);

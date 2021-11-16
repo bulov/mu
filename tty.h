@@ -1,4 +1,4 @@
-#include "curses.h"
+#include "ncurses.h"
 struct s_dpd { int xdim,ydim,xold,yold; } *dpd();
 #define ctrl(x) ('x'&037)
 
@@ -76,3 +76,6 @@ struct s_dpd { int xdim,ydim,xold,yold; } *dpd();
 #define _CD  KEY_EOS     /* 0516 очистка экрана от курсора до конца   */
 #define _CE  KEY_EOL     /* 0517 очистка от курсора до конца строки   */
 #define _CL  KEY_CLEAR   /* 0515 очистка экрана                       */
+
+
+#define UTF8_D0(a) ( ( (0xd1 == ((int)(a)&0377) ) || ((int)(a)&0377) == 0xd0 ))

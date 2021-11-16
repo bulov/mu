@@ -72,28 +72,26 @@ char    head[] = "\n\
 #include <sys/syslog.h>
 #include <ctype.h>
 #include <locale.h>
+#include <unistd.h>
+#include <setjmp.h>
 #define BACK    1			/* отступ влево для пометки       */
 #define MARK    '>'			/* символ пометки */
 #define unify( c) ( ((c) & ~0240 ) & 0377 )
 /*
 ** Типы функций
 */
-int     chld_int ();
-int     pipe_int ();
-int     clck_int ();
 int     Ks;
 extern  int kioutf;
 extern  int Red;
 int     Stop;
 WINDOW  *Win;
-Null()
-{
+int Null(){
 }
 int (*DPR_CLEAN)();
 /*
 *+ main()       Головной модуль
 */
-main (argc, argv)
+int main (argc, argv)
 	int             argc;		/* Character pointers to and count */
 	char          **argv;		/* pk->command line arguments */
 {
@@ -160,7 +158,7 @@ stop:                dpo (_CL);
 	signal (SIGPIPE, pipe_int);
 	DPR_CLEAN = Null;
 /*        system("stty -a");/**/
-       openlog(getlogin(), 0, 0); /* vsi */
+	openlog(getlogin(), 0, 0); /* vsi */
 	Stop = 0;
 	for (;;){
 	   choise (ms);
@@ -168,15 +166,10 @@ stop:                dpo (_CL);
 	       goto stop;
 	}
 }
-/*
-*+ choise ()    Выбор в меню
-*/
-choise (m)
-struct maska *m;
-{
-	register int    c, cc;          /* команда */
+struct maska *choise (struct maska *m){      //  *+ choise ()    Выбор в меню
+	register int    cc;          /* команда */
 	struct pol     *to, *pol, *save, *pl;
-	int             poz;
+	int             c,poz;
 	static char    *acts[] = {
 				  "F0", "F1", "^A", "^H", "F-", "RETURN", NULL
 	};
@@ -193,11 +186,12 @@ struct maska *m;
 	Stop++;
 	Maska = m;
 	if (m->dir & HLP)
-		return(ON);
+		return((struct maska *)ON);
+//                return(ON);
 	if(m->make)
 		dosystem(m->make,OFF);
 	if(m->dir & RUN )
-		send_task(0);   /* Запуск задачи */
+		send_task(0,0);   /* Запуск задачи */
 	if(m->dir & TAB ){
 		if(!m->task && (m->task = Task_Tab)){
 			m->task = Task_Tab;
@@ -230,7 +224,7 @@ BEGIN:
 			      case _F11:case _F12:case _F13:
 		    case _F14:case _F16:case _F17:case _F18:
 		    case _F19:case _F20:
-			if (pl = (struct pol*)setjmp (Exec)) {
+			if (pl = (struct pol*) setjmp (Exec)) {
 				c = execute(pl);
 				FREE(pl->d);
 				FREE(pl);
@@ -266,7 +260,7 @@ BEGIN:
 		    case _nl:          /* Вверх по стеку */
 		    case _K(2):          /* Вверх по стеку */
 			dpo (' ');	/* стирание метки MARK */
-			c = (int) m;
+			c = (long int) m;
 			goto execut;
 		    case _cr:          /* выполнить операцию */
 			dpo (' ');	/* стирание метки MARK */
@@ -286,7 +280,8 @@ execut:                 if (c > 0){
 					read_task(ON,ON);
 				if((m->dir & EXIT ) &&  m->task )
 					clear_tab(&m->task,OFF);
-				return (c);
+				return (m);
+//                                return (c);
 			}else if (c){   /* Перерисовать экран */
 				m->dir |= DISPLAY;
 				Maska = m;
@@ -322,7 +317,7 @@ execut:                 if (c > 0){
 			if (m->help) {
 				register struct maska *o = m->help;
 
-				help (o->x, o->y, o->pol->t, o->pol->d, OFF);
+				help (o->x, o->y, &o->pol->t, &o->pol->d, OFF);
 			}else{
 				ceol (0, Ydim - 1);
 			}
@@ -334,11 +329,12 @@ execut:                 if (c > 0){
 				*pol->t = c;
 				poz = 1;
 		 ED:            Red = R_SO | R_US | R_TAIL | R_NEXT ;
-				c = red (m->x + pol->x, m->y + pol->y, pol->t, pol->l, poz);
+				c = red (m->x + pol->x, m->y + pol->y, pol->e, pol->l, poz);
+//                                c = red (m->x + pol->x, m->y + pol->y, pol->t, pol->l, poz);
 				if( c == (int) _cr )
 					c = (int) KEY_RIGHT;
 				if(pol->key & ENV)
-					setenv (pol->d + 1, pol->t);
+					setenv (pol->d + 1, pol->t, 1);
 				goto BEGIN;
 			}
 			if ( isprint (c) ) {
@@ -358,38 +354,65 @@ execut:                 if (c > 0){
 		display (OFF);
 	}				/* endfor(;;) */
 }
-/*
-*+ execute ()   Выполнение строк меню ( старое )
-*/
-execute (pol)
-	register struct pol *pol;
-{
+void syslog_v(int l1, char *s , char *m){
+char   alt7[]={
+/*6*/  0x40,0x41,0x42,0x43,0x44,0x45,0x46,0x47,0x48,0x49,0x4A,0x4B,0x4C,0x4D,0x4E,0x4F
+/*7*/ ,0x50,0x51,0x52,0x53,0x54,0x55,0x56,0x57,0x58,0x59,0x5A,0x5B,0x21,0x5D,0x5E,0x7F
+/*8*/ ,0x61,0x62,0x77,0x67,0x64,0x65,0x76,0x7A,0x69,0x6A,0x6B,0x6C,0x6D,0x6E,0x6F,0x70
+/*9*/ ,0x72,0x73,0x74,0x75,0x66,0x68,0x63,0x7E,0x7B,0x7D,0x78,0x79,0x78,0x7C,0x60,0x71
+/*A*/ ,0x61,0x62,0x77,0x67,0x64,0x65,0x76,0x7A,0x69,0x6A,0x6B,0x6C,0x6D,0x6E,0x6F,0x70
+/*B*/ ,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A
+/*C*/ ,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A
+/*D*/ ,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A
+/*E*/ ,0x72,0x73,0x74,0x75,0x66,0x68,0x63,0x7E,0x7B,0x7D,0x78,0x79,0x78,0x7C,0x60,0x71
+/*F*/ ,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x7F
+};
+   char    mes[1024];
+   char   *ss, *f7;
+
+   for(ss = mes ; *m != 0; m++ ){
+      if( (0xff & *m) >= 0x60 ){
+	  *ss++ = alt7[ (0xff & *m) - 0x60];
+      }else
+	   *ss++ = *m;
+   }
+   *ss = 0;
+   syslog(LOG_INFO|LOG_LOCAL0, s, mes);     /* vsi */
+}
+int execute (register struct pol *pol){         //   *+ execute ()   Выполнение строк меню ( старое )
 	register char  *s, *end;
 	char           *oblom, buf[L_SIZ];
 	struct maska   *new, *ret, *m;
+	int            l;
 
 	if ((s = pol->d) == NULL){
 		err("Пустая команда");
 		return ( OFF );
 	}
 	if (*s == '&')			/* подстановка в строку */
-		longjmp (Env, (int) pol->t);  /* Тащим строку вверх */
+		longjmp (Env, (long int) pol->t);  /* Тащим строку вверх */
 	m = Maska;
 	if ( *s == '$' && pol->key & ENV) {                /* подстановка в строку */
-		char           *ss, *se;
-		int             x, y, num;
+		char           *ss, *se , *sn;
+		int             x, y, num, lb, le;
 
-		if( (ss = index (pol->t, '[')) != 0 ){
-		   for (num = 0, se = ++ss; *se != ']';)
-			   buf[num++] = *se++;
+		if( (sn = ss = index (pol->t, '[')) != 0 ){
+		   for (num = 0, se = pol->e; 0 != *se ;)  buf[num++] = *se++;
 		   buf[num] = '\0';
-		   x = m->x + pol->x + (ss - pol->t) ;
+		   for (num = 0;  *sn != ']' && 0 != *s; sn++ , num++ );
+		   x = m->x + pol->x + (ss - pol->t) - tUTF8(pol->t ,ss - pol->t);
 		   y = m->y + pol->y;
 		   Red = R_SO | R_TAIL | R_NEXT ;
-		   red (x+1, y, buf, num, 0);
-		   strncpy (ss, buf, num);
-		   for (--se; ss <= se && *se == '\0'; *se-- = ' ');
-		   setenv (s + 1, buf);
+		   red (x+2, y, buf, num-1, 0);
+		   setenv (s + 1, buf, 1);
+		   lb = strlen(buf);
+		   le = strlen(pol->e);
+		   if ( le < lb){
+		       FREE   (pol->e);
+		       MALLOC (pol->e, buf, lb);
+		   }
+		   for (num = 0, se = pol->e; 0 != buf[num] ; num++ ,se++) *se = buf[num];
+		   *se = '\0';
 		}
 		return (OFF);
 	}
@@ -416,7 +439,7 @@ execute (pol)
 				s = oblom;
 		}
 		if (!strcmp (s, "PRED"))        /* Предыдущее меню */
-			return ((int)m);
+			return ((long int)m);
 		else if (!strcmp (s, "SELF"))   /* Это же меню */
 			return (ON);
 		if ((new = grep (s, OFF)) == NULL) {
@@ -424,12 +447,12 @@ execute (pol)
 			return (OFF);
 		}
 		if (new->dir & STACK)           /* уже вызывалась */
-			return ((int)new);
+			return ((long int)new);
 		delmenu (m,ON);
-		ret = (struct maska *) choise (new);
+		ret = (struct maska *)choise (new);
 		if (ret == new || ret == m)
 				return (ON);
-		return ((int)ret);
+		return ((long int)ret);
 	}
 	if( pol->key & SYS1 )          /* vsi */
 	   syslog_v(LOG_LOCAL0, "START %s", pol->t);     /* vsi */
@@ -438,12 +461,7 @@ execute (pol)
 	   syslog_v(LOG_LOCAL0, "STOP  %s", pol->t);     /* vsi */
 	return (ON);
 }
-/*
-*+ dosystem ()  Выполнить команду системы.
-*/
-dosystem (s, key)
-	char           *s;
-{
+int dosystem (char *s,int key){        //  *+ dosystem ()  Выполнить команду системы.
        extern WINDOW  *Win;
 	int             i;
 	char           *ssetenv();
@@ -468,12 +486,7 @@ dosystem (s, key)
 	Del = ON;
 	return (i);
 }
-/*
-*+ in_esc()     Выбрать и выполнить команду
-*/
-in_esc (c)
-{
-
+int in_esc (int c){        //  *+ in_esc()     Выбрать и выполнить команду
 	if(c == F_CLEAR){
 		if(Maska->dir & MSK){
 			clear_pol(Maska);
@@ -488,8 +501,8 @@ in_esc (c)
 	if(c == F_DO){
 		if (Maska->help) {
 			register struct maska *o = Maska->help;
-			c = help (o->x, o->y, o->pol->t, o->pol->d, ON);
-			help (o->x, o->y, o->pol->t, o->pol->d, OFF);
+			c = help (o->x, o->y, &o->pol->t, &o->pol->d, ON);
+			help (o->x, o->y, &o->pol->t, &o->pol->d, OFF);
 			if(c == -1)
 				return (ON);            /* Нет операций */
 			c += (int)_F6;
@@ -503,11 +516,7 @@ in_esc (c)
 		read_task(Maska->task->dfr?OFF:ON,OFF);
 	return (ON);
 }
-/*
-*+ in_menu ()   Встроенное меню
-*/
-in_menu ()
-{
+int in_menu (){        //  *+ in_menu ()   Встроенное меню
 	static char    *acts[] = {
 				  "exit", "shell", "files", "cd", "nothing", 0
 	};
@@ -548,12 +557,7 @@ in_menu ()
 	}
 	return (OFF);
 }
-/*
-*+ e_item ()    Выделение строк
-*/
-e_item (k)
-	register struct pol *k;
-{
+void e_item (register struct pol *k){       //  *+ e_item ()    Выделение строк
 	register int x = Maska->x + k->x;
 	register int y = Maska->y + k->y;
 
@@ -566,11 +570,7 @@ e_item (k)
 	dpo (MARK);
 	dpo ('\b');
 }
-/*
-*+ l_item () Гашение строки
-*/
-l_item ()
-{
+void l_item (){         //  *+ l_item () Гашение строки
 	register int x = Maska->x + Maska->cur->x;
 	register int y = Maska->y + Maska->cur->y;
 
@@ -583,24 +583,44 @@ l_item ()
 	if(Maska->dir & MSK )
 		attroff ( A_UNDERLINE );
 }
-/*
-*+ drawline ()  Рисовать строку
-*/
-drawline (ms)
-struct maska *ms;
-{
+void drawline (struct maska *ms){        // *+ drawline ()  Рисовать строку
 	register char  *s = ms->cur->t;
+	register char  *e = ms->cur->e;
 	register int    x = ms->x + ms->cur->x;
 	register int    l = ms->cur->l;
+	int             key, keyE=0;
 
        if( ms->cur->key & MENU){
 	   dpo('>');
        }else{
 	   dpo(' ');
        }
-	while (*s && x++ < Xdim){
-		dpo (*s++);
-		l--;
+       key=0;
+       for (;*s && x++ < Xdim;s++){
+	       if ( ']' == *s ){
+		   keyE=1;
+		   key=0;
+	       }
+	       if  ( key  ) {
+		   if ( 0 != *e ){
+		       if ( fUTF8(e) )
+			   dpo (*e++);
+		       dpo (*e++);
+		   }else{
+		       dpo (*s);
+		   }
+	       }else{
+		   if ( keyE && 0 != *e ){
+		       dpo ('>');
+		   }else
+		       dpo (*s);
+	       }
+	       if ( '[' == *s ){
+		   if ( NULL != e ){
+		       key++;
+		   }
+	       }
+	       l--;
 	}
 	if( l > 0 )
 		if(Pc)
@@ -608,12 +628,8 @@ struct maska *ms;
 		else
 			dpn(l,' ');
 }
-/*
-*+ err ()       Выдать ошибку
-*/
-//err (fmt, args)
 #include <stdarg.h>
-void err (char *fmt,...){
+void err (char *fmt,...){          //  *+ err ()       Выдать ошибку
 	va_list         args;
 	FILE            _strbuf;
 	char            buf[200];
@@ -624,8 +640,8 @@ void err (char *fmt,...){
 /*        _strbuf._cnt = 200;
 /*        _doprnt (fmt, &args, &_strbuf);/**/
 /*        putc ('\0', &_strbuf);           /**/
-	va_start (args, buf);
-	vsprintf (buf, fmt, &args);
+	va_start (args, fmt);
+	vsprintf (buf, fmt, args);
 	va_end   (args);
 	dpp (0,yd);
 	attron (A_REVERSE);
@@ -643,37 +659,11 @@ void err (char *fmt,...){
        /*  region(0,Ydim - 1);   **/
 	if (Maska && Maska->help && Maska->help->y == yd ) {
 		register struct maska *o = Maska->help;
-		help (o->x, o->y, o->pol->t, o->pol->d, OFF);
+		help (o->x, o->y, &o->pol->t, &o->pol->d, OFF);
 	}
 	if ( i == F_CLEAR && Maska->dir & MSK ){
 		clear_pol(Maska);
 		draw_pol(Maska,1);
 	}
 	return;
-}
-syslog_v(int l1, char *s , char *m){
-char   alt7[]={
-/*6*/  0x40,0x41,0x42,0x43,0x44,0x45,0x46,0x47,0x48,0x49,0x4A,0x4B,0x4C,0x4D,0x4E,0x4F
-/*7*/ ,0x50,0x51,0x52,0x53,0x54,0x55,0x56,0x57,0x58,0x59,0x5A,0x5B,0x21,0x5D,0x5E,0x7F
-/*8*/ ,0x61,0x62,0x77,0x67,0x64,0x65,0x76,0x7A,0x69,0x6A,0x6B,0x6C,0x6D,0x6E,0x6F,0x70
-/*9*/ ,0x72,0x73,0x74,0x75,0x66,0x68,0x63,0x7E,0x7B,0x7D,0x78,0x79,0x78,0x7C,0x60,0x71
-/*A*/ ,0x61,0x62,0x77,0x67,0x64,0x65,0x76,0x7A,0x69,0x6A,0x6B,0x6C,0x6D,0x6E,0x6F,0x70
-/*B*/ ,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A
-/*C*/ ,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A
-/*D*/ ,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A
-/*E*/ ,0x72,0x73,0x74,0x75,0x66,0x68,0x63,0x7E,0x7B,0x7D,0x78,0x79,0x78,0x7C,0x60,0x71
-/*F*/ ,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x2A,0x7F
-};
-   char    mes[1024];
-   char   *ss, *f7;
-
-   for(ss = mes ; *m != 0; m++ ){
-      if( (0xff & *m) >= 0x60 ){
-	  *ss++ = alt7[ (0xff & *m) - 0x60];
-      }else
-	   *ss++ = *m;
-   }
-   *ss = 0;
-   syslog(LOG_INFO|LOG_LOCAL0, s, mes);     /* vsi */
-
 }

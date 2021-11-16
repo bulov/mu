@@ -18,7 +18,7 @@ ssetenv(char *p)
 	       if(stp=index(++val,';')){
 		   *stp++ = 0;
 		   stp = p + (val + strlen(val) - buf +1);
-		   setenv (nam, val);
+		   setenv (nam, val, 1);
 		   Draw=ON;            /* Проверять environ */
 		   return(ssetenv(stp));
 	       }else{
@@ -29,12 +29,7 @@ ssetenv(char *p)
    }
    return(stp);
 }
-/*
-*+ readmenu ()  Считать меню из файла
-*/
-readmenu (name, key)
-	char           *name;
-{
+int readmenu (char *name,int key){         //  *+ readmenu ()  Считать меню из файла
 	register        i, j;
 	char           *ss, *from, *strcpy ();
 	char            b0[L_SIZ], b1[L_SIZ], b2[L_SIZ], b3[L_SIZ];
@@ -290,9 +285,7 @@ par (p)
 	if (k_parse)
 		par (++p);
 }
-vc(p,key,val)
-char    *p;
-{
+void vc(char *p,int key,int val){
 	int     nn = 0, ns = 0;
 
 	if (!strncmp (p,"all",3)){

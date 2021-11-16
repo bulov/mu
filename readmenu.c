@@ -18,24 +18,19 @@ ssetenv(char *p)
 	       if(stp=index(++val,';')){
 		   *stp++ = 0;
 		   stp = p + (val + strlen(val) - buf +1);
-		   setenv (nam, val);
+		   setenv (nam, val, 1);
 		   Draw=ON;            /* Проверять environ */
 		   return(ssetenv(stp));
 	       }
 	       stp = p + (val + strlen(val) - buf);
-	       setenv (nam, val);
+	       setenv (nam, val, 1);
 	   }
        }
    }
    return(stp);
 }
-/*
-*+ readmenu ()  Считать меню из файла
-*/
-readmenu (name, key)
-	char           *name;
-{
-	register        i, j;
+int readmenu (char *name,int key){                     //  *+ readmenu ()  Считать меню из файла
+	register        int i, j;
 	char           *ss, *from, *strcpy ();
 	char            b0[L_SIZ], b1[L_SIZ], b2[L_SIZ], b3[L_SIZ];
 	char           *p = b0, *up = b1, *du = b2, *lo = b3;
@@ -152,7 +147,8 @@ old:            i = strlen (p = b0);
 			fpm (up, lo, du);
 		} else if (Maska->dir & OLD) {
 			if (++Str < Ydim)
-				s_pol (Maska->x == 0 ? 20 : 0, Str, i, p, ON);
+				s_pol (Maska->x == 0 ? 20 : 0, Str, i, p);
+//                                s_pol (Maska->x == 0 ? 20 : 0, Str, i, p, ON);
 		} else if (Maska->dir & HLP) {
 			ss = index (p, ':');
 			*ss++ = '\0';
@@ -165,14 +161,8 @@ old:            i = strlen (p = b0);
 		File = file;
 	return(0);
 }
-/*
-*+ stir()        Упаковать символы в целое
-*/
-stir (ss, j)
-	char            ss[];
-
-{
-	register        i;
+int stir (char ss[],int j){    //  *+ stir()        Упаковать символы в целое
+	register        int i;
 	union ic {
 		int             i;
 		char            c[4];
@@ -183,12 +173,7 @@ stir (ss, j)
 		ic.c[i] = ss[j - i - 1];
 	return (ic.i);
 }
-/*
-*+ par()        Разбор строки описания поля
-*/
-par (p)
-	char           *p;
-{
+void par (char *p){         //      *+ par()        Разбор строки описания поля
 	int             val, k_parse = 0;
 	char           *sz, *ss;
 
@@ -290,9 +275,7 @@ par (p)
 	if (k_parse)
 		par (++p);
 }
-vc(p,key,val)
-char    *p;
-{
+void vc(char *p,int key,int val){
 	int     nn = 0, ns = 0;
 
 	if (!strncmp (p,"all",3)){

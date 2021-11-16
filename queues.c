@@ -1,11 +1,6 @@
-#include "tty.h"
 #include "mu.h"
-/*
-*+ s_pol()      Запомнить поля
-*/
-s_pol (x, y, l, p)
-	char           *p;
-{
+#include "tty.h"
+void s_pol (int x,int y,int l,char *p){      // *+ s_pol()      Запомнить поля
 	register struct pol *n;
 	register char  *s;
 	static struct pol *save;
@@ -54,12 +49,7 @@ s_pol (x, y, l, p)
 	n->back = save;
 	save = n->next->back = n;
 }
-/*
-*+ s_tab()      Запомнить таблицу или рамку
-*/
-s_tab (x, y, l, p, key)
-	char           *p;
-{
+void s_tab (int x,int y,int l,char *p,int key){     //  *+ s_tab()      Запомнить таблицу или рамку
 	register struct poz *n;  /**/
 	static struct poz *save_tab, *save_ram;
 
@@ -80,13 +70,7 @@ s_tab (x, y, l, p, key)
 	CALLOC (n->t, p, n->l);
 	n->next = NULL;
 }
-/*
-*+ grep()       Поиск меню по дереву или возврат адреса пустой ячейки.
-*/
-struct maska   *
-grep (menu, key)
-	char           *menu;
-{
+struct maska *grep (char *menu,int key){        // *+ grep()       Поиск меню по дереву или возврат адреса пустой ячейки.
 	register struct maska *l;
 	register char  *s, *file=menu;
 	static   char  save[L_SIZ];
@@ -98,8 +82,9 @@ grep (menu, key)
 	}
 	for (l = Head; l != NULL; l = l->next){
 		if (!strcmp (menu, l->menu)) {
-			if (key == ON)
+			if (key == ON){
 				free_mas (l);
+			}
 			return (l);
 		}
 	}
@@ -122,12 +107,7 @@ grep (menu, key)
 	l->next = Head;
 	return (Maska = Head = l);
 }
-/*
-*+ free_mas()   Освободить память из под меню
-*/
-free_mas (m)
-	struct maska   *m;
-{
+void free_mas (struct maska   *m){      //  *+ free_mas()   Освободить память из под меню
 	register struct poz *p, *ps;
 	register struct pol *l, *ls;
 
@@ -157,6 +137,8 @@ free_mas (m)
 		do {
 			ls = l->next;
 			FREE (l->t);
+			if ( NULL != l->e )
+			   FREE (l->e);
 			FREE (l->d);
 			FREE (l);
 			l = ls;
@@ -169,12 +151,7 @@ free_mas (m)
 	m->pol = NULL;
 	Maska = m;
 }
-/*
-*+ drawmenu()   Рисовать меню
-*/
-drawmenu (m, key_env)
-	struct maska   *m;
-{
+void drawmenu (struct maska   *m, int key_env){  // *+ drawmenu()   Рисовать меню
 	register char  *c;
 	struct pol     *l;
 	struct poz     *p;
@@ -216,18 +193,14 @@ drawmenu (m, key_env)
 	if (m->help) {
 		register struct maska *o = m->help;
 
-		help (o->x, o->y, o->pol->t, o->pol->d, OFF);
+		help (o->x, o->y, &o->pol->t, &o->pol->d, OFF);
 	}
 }
-/*
-*+ draw_pol()   Рисовать pole
-*/
-draw_pol (m, key_env)
-	struct maska   *m;
-{
+void draw_pol (struct maska   *m, int key_env){ //  *+ draw_pol()   Рисовать pole
 	register char  *c;
 	struct pol     *l;
 	struct poz     *p;
+	int            nUTF8,i;
 
 	l = m->pol;			/* Поля ввода */
 	if (m->dir & MSK) {
@@ -243,12 +216,13 @@ draw_pol (m, key_env)
 		   sn = sn ? sn : "";
 		   if (m->dir & OLD ) {
 		       GREP(p,l->t,'[');       /* текст[   ]:$ENV */
-		       for (p++; *p != ']'; p++)
-			   if ((*p = *sn++) == 0) {
-			       for (; *p != ']'; p++)
-				   *p = ' ';
-			       break;
-			   }
+		       if ( NULL != p ){
+			   if ( NULL != l->e)  FREE (l->e);
+			   l->e = strcpy (malloc (strlen (sn) + 1), sn);
+//                           for (*p++ = '['; *p != ']'; p++){
+//                                   *p = ' ';
+//                           }
+		       }
 		   }else{
 		       strncpy(l->t,sn,l->l);
 		       *(l->t + l->l) = '\0';
@@ -275,11 +249,7 @@ draw_pol (m, key_env)
 	}
 
 }
-/*
-*+ display()    Рисовать все меню
-*/
-display ()
-{
+void display (){       //  *+ display()    Рисовать все меню
 	register struct maska *m;
 
 	if (Rew == OFF) {
@@ -291,12 +261,7 @@ display ()
 			drawmenu (m, Draw);
        Draw = OFF;
 }
-/*
-*+ delmenu ()   Тереть меню
-*/
-delmenu (m,key)
-	struct maska   *m;
-{
+void delmenu (struct maska   *m,int key){   //  *+ delmenu ()   Тереть меню
 	register char  *c;
 	struct pol     *l;
 	struct poz     *p;
@@ -338,7 +303,7 @@ delmenu (m,key)
 *+ file()       Записать в файл структуры tab ram и pol
 */
 /*
-file ()
+file (){
 {
 	struct maska   *m;
 	struct poz     *p;
@@ -382,12 +347,7 @@ file ()
 	}
 }
 */
-/*
-*+ fin()        По номеру найти указатель на поле
-*/
-struct pol *
-fin(i)
-{
+struct pol *fin(int i){    //  *+ fin()        По номеру найти указатель на поле
 	register struct pol *l = Maska->pol;
 	register int    k = 0;
 
@@ -398,34 +358,19 @@ fin(i)
 	} while (l != Maska->pol);
 	return(l);
 }
-/*
-*+ set_v()      Установить ключ для всех значений
-*/
-set_v(l,i)
-register struct pol *l;
-{
+void set_v(register struct pol *l, int i){  //  *+ set_v()      Установить ключ для всех значений
 	do {
 		l->key |= i;
 		l = l->next;
 	} while (l != Maska->pol);
 }
-/*
-*+ clr_v()      Очистить ключ для всех значений
-*/
-clr_v(l,i)
-register struct pol *l;
-{
+void clr_v(register struct pol *l, int i){  //  *+ clr_v()      Очистить ключ для всех значений
 	do {
 		l->key &= ~i;
 		l = l->next;
 	} while (l != Maska->pol);
 }
-/*
-*+ clear()    Очистить все поля.
-*/
-clear_pol(m)
-	struct maska   *m;
-{
+void clear_pol(struct maska   *m){ //  *+ clear()    Очистить все поля.
 	struct pol     *l;
 
 	l = m->pol;                     /* Поля ввода */

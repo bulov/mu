@@ -2,11 +2,11 @@
 #include "mu.h"
 int    DP_ON;
 
-tab_date(){
+void tab_date(){   // Заглушка
 }
 
 
-dpbeg() {
+void dpbeg() {
        register int i;
        static int  nfirst = 0;
 
@@ -20,8 +20,7 @@ dpbeg() {
        keypad(Win,TRUE);              /* init f-keyboard */
        DP_ON =1;
 }
-/* ПЕРЕКЛЮЧЕНИЕ В ОБЫЧНЫЙ РЕЖИМ */
-dpend() {
+void dpend() {          //          ПЕРЕКЛЮЧЕНИЕ В ОБЫЧНЫЙ РЕЖИМ
        if( !DP_ON)
 	       return;
      /*  keypad(Win,FALSE);      /* init f-keyboard */
@@ -32,16 +31,16 @@ dpend() {
        DP_ON = 0;
 }
 /* ВЫВОД ОДНОГО СИМВОЛА С БУФЕРИЗАЦИЕЙ */
-dpo( cc )
+int dpo( int cc )
 {
        chtype c;
 
        if( cc == _CL ){
 	       clear();
-	       return;
+	       return(0);
        }else if( cc == _CE ){
 	       clrtoeol();
-	       return;
+	       return(0);
        }
        c    = cc & 0x000000ffL;
        return(addch(c));
@@ -52,18 +51,17 @@ int dpi() {
        return ( getch() );
 }
 /* УСТАНОВ КУРСОРА В ПОЗИЦИЮ (x,y) */
-dpp( x, y )
+int dpp(int x, int y )
 {
        return( move (y,x));
 }
 /* ВЫВОД СИМВОЛА 'c' 'n' РАЗ */
-dpn(    n, c )
-    int n, c;
+void dpn(int n, int c )
 {
     for(; --n>=0;)  dpo( c );
 }
 /* СТИРКА ХВОСТА СТРОКИ */
-ceol( x,y){
+void ceol(int x, int y){
 	dpp( x,y);
 	clrtoeol();
 }
@@ -77,19 +75,14 @@ struct s_dpd *dpd() {
 	sd.yold = Win->_cury;  /* y  из последнего dpp( x,y) */
 	return( &sd);
 }
-/* Открыть окно */
-region(tl,bl)
-int tl,bl;
-{
+void region(int tl,int bl){        //  Открыть окно
        setscrreg(tl,bl);
        dpp(0,tl);
 }
-/* УСТАНОВИТЬ ЦВЕТ */
-dpc (c) {
+void dpc (int c) {      //  /* УСТАНОВИТЬ ЦВЕТ */
        /* Пока не реализовано */
 }
-dpmsg (x, y, s) char   *s;
-{
+void dpmsg (int x,int  y,char   *s){
     ceol( x, y);
     dpc (RED);
     dps (s);
@@ -109,9 +102,7 @@ dpmsg (x, y, s) char   *s;
 /*        addch( c & 0x000000ffL );
 /*        attroff(A_ALTCHARSET );
 /*}
-/* ВЫВОД СТРОКИ СИМВОЛОВ ДО \0 */
-dps(      str )
-    char *str;
-{
+*/
+void dps(char *str ){       //     ВЫВОД СТРОКИ СИМВОЛОВ ДО \0
 	addstr(str);
 }

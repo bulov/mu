@@ -2,16 +2,10 @@
  *  П/Программы для связи задач mu <=>  task
  *
  */
-#include "tty.h"
-#include "rob.h"                        /* Эмуляция robotron */
 #include "mu.h"                         /* Местные штучки */
+#include "tty.h"
 extern int errno;
-/*
-*+ collect()    Собрать в буфер поля отправки
-*/
-collect(b)
-	char           *b;
-{
+int collect(char *b){  //  *+ collect()    Собрать в буфер поля отправки
 	struct pol     *l;
 	char           *c, *bs, *bn, *bb=b;
 
@@ -70,12 +64,7 @@ collect(b)
 	*b = '\0';
 	return(b - bb);       /* Длина отправлямой записи */
 }
-/*
-*+ miracle()    Записать полученную запись в роля
-*/
-miracle(s)
-	unsigned  char           *s;
-{
+void miracle(unsigned char *s){ //  *+ miracle()    Записать полученную запись в роля
 	char           *c,*bs;
 	struct pol     *p;
 	int             key_blan, n, nn, nd;
@@ -144,15 +133,8 @@ miracle(s)
 		p = p->next;
 	} while (p != Maska->pol);
 }
-/*
-*+ command ()   Интерпритация комманд от задач.
-*/
-command (ts, pk)
-struct  task   *ts;
-struct packet  *pk;
-{
+int command (struct  task   *ts, struct packet  *pk){  // *+ command ()   Интерпритация комманд от задач.
 	int     info;
-
 	info = pk->info >> 8;
 	pk->text[pk->lenth] = '\0';
 	switch(pk->comm){
@@ -255,7 +237,7 @@ struct packet  *pk;
 		Task_Tab = Maska->task;
 		n = (struct pol *) malloc (SIZ(pol));
 		n->d = (char*)strncpy(malloc(pk->lenth +2),&pk->text[-1],pk->lenth +1);
-		longjmp(Exec,(int) n);
+		longjmp(Exec,(long int) n);
 	   }
 	   default:
 		err("comm нет команды");

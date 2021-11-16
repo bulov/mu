@@ -1,6 +1,11 @@
 #include   "sys/errno.h"
 #include <curses.h>
 #include <setjmp.h>			/* Обработка ошибочных явлений */
+#include <stdlib.h>
+#include <string.h>
+#include "rob.h"
+
+
 /*
 ** Symbol Definitions
 */
@@ -34,13 +39,14 @@
 ** Structrure Definitions
 */
 struct poz {
-	char            x, y, l;	/* Координаты поля и его длинна */
+	char            x, y, l;        /* Координаты поля и его длинна */
 	char           *t;		/* Куда писать текст */
 	struct poz     *next;		/* Следущее поле */
 };
 struct pol {
-	char            x, y, l;	/* Координаты поля и его длинна */
+	char            x, y, l;        /* Координаты поля и его длинна */
 	char           *t;		/* Куда писать текст */
+	char           *e;              /* Куда писать текст environ*/
 	char           *d;              /* Строка действий */
 	struct pol     *next;		/* Следущее поле */
 	struct pol     *back;		/* Предыдущее поле */
@@ -84,6 +90,7 @@ struct maska {
 #       define  EXTERN  extern
 #endif
 extern errno;
+EXTERN WINDOW       *Win;
 EXTERN struct maska *Head;		/* Заголовок списка масок */
 EXTERN struct maska *Maska;             /* Текущая маска */
 EXTERN struct task  *H_task;            /* Заголовок списка задач */
@@ -128,3 +135,67 @@ long            time ();
 #define F_DO    (int)_F16
 
 extern WINDOW  *Win;
+
+int dpp(int x, int y );
+int dpo(int cc );
+int dpline( int x, int y, char **list ,char **list2 );
+int dpi();
+int dpp(int x, int y );
+void dpn(int n, int c );
+void ceol(int x, int y);
+void tab_date();                                       //  *+ tab_date()   Заглушка
+void drawmenu (struct maska   *m, int key_env);        //  *+ drawmenu()   Рисовать меню
+void draw_pol (struct maska   *m, int key_env);        //  *+ draw_pol()   Рисовать pole
+int command (struct  task   *ts, struct packet  *pk);  //  *+ command ()   Интерпритация комманд от задач.
+void clr_v(register struct pol *l, int i);             //  *+ clr_v()      Очистить ключ для всех значений
+void clear_pol(struct maska   *m);                     //  *+ clear()      Очистить все поля.
+void set_v(register struct pol *l, int i);             //  *+ set_v()      Установить ключ для всех значений
+struct pol *fin(int i);                                //  *+ fin()        По номеру найти указатель на поле
+int collect(char *b);                                  //  *+ collect()    Собрать в буфер поля отправки
+void clear_tab (struct task   **tts,int key);          //  *+ clear_tab()  Очистить вход в таблице
+void miracle(unsigned char *s);                        //  *+ miracle()    Записать полученную запись в роля
+int write_task (int comm);                             //  *+ write_task() Послать сообщение транзакции
+int read_task (int key,int flag);                      //  *+ read_task()  Получить сообщение от транзакции
+int send_task (int key,int comm);                      //  *+ send_task()  Запустить или послать сообщение транзакции по имени
+void err (char *fmt,...);                              //  *+ err ()       Выдать ошибку
+void pipe_int ();                                      //  *+ pipe_int()   Pipe interrupt handler
+void chld_int ();                                      //  *+ chld_int()   Zombie state eksel-moksel
+void clck_int ();                                      //  *+ clck_int()   Timer interrupt handler
+void dps(char *str );                                  //                  ВЫВОД СТРОКИ СИМВОЛОВ ДО \0
+void dpmsg (int x,int  y,char   *s);
+void dpc (int c);                                      //                  УСТАНОВИТЬ ЦВЕТ
+void region(int tl,int bl);                            //                  Открыть окно
+void dpbeg();
+void dpend();                                          //                  ПЕРЕКЛЮЧЕНИЕ В ОБЫЧНЫЙ РЕЖИМ
+void s_tab (int x,int y,int l,char *p,int key);        //  *+ s_tab()      Запомнить таблицу или рамку
+int  help (int x,int y,char **list,char **list2,int key);
+int  com (register char *p);
+void fpm (char *u,char *l,char *d);
+void s_pol (int x,int y,int l,char *p);                // *+ s_pol()       Запомнить поля
+void mu_set(int key);                                  //  *+ mu_set()     Извлеч и сохранить внешние переменные
+struct maska *choise (struct maska *m);                         //  *+ choise ()    Выбор в меню
+int  dosystem (char *s,int key);                       //  *+ dosystem ()  Выполнить команду системы.
+void e_item (register struct pol *k);                  //  *+ e_item ()    Выделение строк
+void l_item ();                                        //  *+ l_item ()    Гашение строки
+void drawline (struct maska *ms);                      // *+ drawline ()   Рисовать строку
+int  execute (register struct pol *pol);               //   *+ execute ()  Выполнение строк меню ( старое )
+int  in_esc (int c);                                   //  *+ in_esc()     Выбрать и выполнить команду
+void delmenu (struct maska   *m,int key);              //  *+ delmenu ()   Тереть меню
+int red (int x,int y,char *s,int mx,int pos);
+int fUTF8( char *a );                                  //                  Проверка на Russian UTF8 символ
+void display ();                                       //  *+ display()    Рисовать все меню
+int tUTF8(char *cline ,int thiscol);                   //                  Сколько Russian UTF8 символов в строке до позиции thiscol  на экране
+int in_menu ();                                        //  *+ in_menu ()   Встроенное меню
+void free_mas (struct maska   *m);                     //  *+ free_mas()   Освободить память из под меню
+struct maska *grep (char *menu,int key);               //  *+ grep()       Поиск меню по дереву или возврат адреса пустой ячейки.
+int readmenu (char *name,int key);                     //  *+ readmenu ()  Считать меню из файла
+int stir (char ss[],int j);                            //  *+ stir()       Упаковать символы в целое
+void par (char *p);                                    //  *+ par()        Разбор строки описания поля
+void vc(char *p,int key,int val);
+int blklen (register char **av);
+char **blkcpy (char **oav,register char ** bv);
+char **blkend (register char **up);
+char **blkcat (char **up,char **vp);
+char **blkspl (register char **up,register char **vp);
+char *strspl (char *cp,char *dp);
+void setenvMy (char *b_name,char *b_val);

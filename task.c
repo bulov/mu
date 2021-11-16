@@ -14,35 +14,28 @@
  *
  */
 #define NOFILES_MIN        64
+#include <unistd.h>
 #include <sys/param.h>			/* Параметры системы */
 #include <sys/types.h>			/* Новые типы переменых */
 #include <sys/file.h>                   /* Работа с файлами */
 #include <sys/time.h>			/* select ()+Структуры времени */
 #include <sys/ioctl.h>
 #include <sys/fcntl.h>
+#include <sys/wait.h>
+#include "mu.h"                         /* Местные штучки */
 #include "tty.h"
 #include <sys/signal.h>                     /* Сигналы обмена */
-#include "rob.h"                        /* Эмуляция robotron */
-#include "mu.h"                         /* Местные штучки */
 #define CLOSE(F)        if (F){ close (F);FD_CLR(F, &Rd);}
 #define PIPE(C,F,N)     {pipe (C);F=C[N];fcntl(F,F_SETFD,1);}
 static char    *F_w, *F_r;
 static int      F_v;
 static fd_set   Rd;
 extern int errno;
-/*
-*+ clck_int()   Timer interrupt handler
-*/
-clck_int ()
-{
+void clck_int (){      //  *+ clck_int()   Timer interrupt handler
 	signal (SIGALRM, clck_int);	/* Setup the timeout */
 	longjmp (E_clck, 1);		/* Tell rpack to give up */
 }
-/*
-*+ chld_int()   Zombie state eksel-moksel
-*/
-chld_int ()
-{
+void chld_int (){       //  *+ chld_int()   Zombie state eksel-moksel
 	int             pid, code;
 	register struct task *ts;
 
@@ -60,11 +53,7 @@ chld_int ()
 		}
 	}
 }
-/*
-*+ pipe_int()   Pipe interrupt handler
-*/
-pipe_int ()
-{
+void pipe_int (){       //     *+ pipe_int()   Pipe interrupt handler
 	signal (SIGPIPE, pipe_int);	/* Setup the pipe interupt */
 	/* err ("Завершение ");         /**/
 	longjmp (E_pipe, 1);		/* Tell rpack to give up */
@@ -121,11 +110,7 @@ parse (p, argv, argc)
 	}
 	argv[*argc] = 0;
 }
-/*
-*+ send_task()  Запустить или послать сообщение транзакции по имени
-*/
-send_task (key, comm)
-{
+int send_task (int key,int comm){       // + send_task()  Запустить или послать сообщение транзакции по имени
 	struct task    *ts;
 	int             i, argc = 0;
 	int             par[2], chl[2], ero[2];	/* pipes to parent, child */
@@ -190,7 +175,7 @@ cont:   if (!F_r)                       /* Закрывать по exit */
 			if (open (F_r, O_RDONLY) < 0) {
 				sprintf (buf, mes, F_r);
 				write(2,buf,strlen(buf));
-				_exit (-1);
+				exit (-1);
 			}
 		} else {
 			dup (chl[0]);	/* dup pipe read to standart input */
@@ -200,7 +185,7 @@ cont:   if (!F_r)                       /* Закрывать по exit */
 			if (open (F_w, F_v, 0644) < 0) {
 				sprintf (buf, mes, F_w);
 				write(2,buf,strlen(buf));
-				_exit (-1);
+				exit (-1);
 			}
 		} else {
 			dup (par[1]);	/* pipe на запись */
@@ -208,7 +193,7 @@ cont:   if (!F_r)                       /* Закрывать по exit */
 		if (execvp (ts->name, argv) == -1){
 				sprintf (buf,"Ошибка запуска %s errno=%d", ts->name,errno);
 				write(2,buf,strlen(buf));
-				_exit(-1);
+				exit(-1);
 		}
 	}				/* parent process executes here */
 	ts->count++;
@@ -221,12 +206,7 @@ cont:   if (!F_r)                       /* Закрывать по exit */
 		return(write_task (comm));         /* Посылаем запись */
 	return(0);
 }
-/*
-*+ clear_tab()  Очистить вход в таблице
-*/
-clear_tab (tts,key)
-	struct task   **tts;
-{
+void clear_tab (struct task   **tts,int key){   //  *+ clear_tab()  Очистить вход в таблице
 	struct task    *tt, *ts;
 	register struct maska *m;
 
@@ -261,12 +241,7 @@ clear_tab (tts,key)
 	FREE (ts);
 	bzero (ts, SIZ (task));  /**/
 }
-/*
-*+ write_task() Послать сообщение транзакции
-*/
-write_task (comm)
-{
-
+int write_task (int comm){     //  *+ write_task() Послать сообщение транзакции
 	struct task    *task;
 	struct packet   pk;
 
@@ -289,12 +264,8 @@ write_task (comm)
 	time (&task->time);		/* Время последнего обращения */
 	return(1);
 }
-/*
-*+ read_task()  Получить сообщение от транзакции
-*/
 #include <sys/socket.h>
-read_task (key,flag)
-{
+int read_task (int key,int flag){      //  *+ read_task()  Получить сообщение от транзакции
 	struct task    *ts;
 	struct packet   pk;
 	fd_set          fdset;
@@ -332,7 +303,7 @@ read_task (key,flag)
 					pk.text[count-HEAD-1] = '\0';
 				else
 					pk.text[count-HEAD] = '\0';
-				err (&pk);
+//                                err (&pk);
 				if(Fp){
 					write (Fp, &pk, count);
 					write (Fp, "\n",1);
@@ -355,7 +326,7 @@ read_task (key,flag)
 					}else
 						goto pid_test;
 				}
-				if((roll = command (ts, &pk)) == N_ROLL)
+				if((roll = command (ts, (struct packet *)&pk)) == N_ROLL)
 					continue;
 				if( Maska->dir & DISPLAY){
 					if( Disp ){

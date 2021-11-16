@@ -38,14 +38,10 @@ psewdo (u, l, d)
 	}
 	return (l);
 }
-com (p)
-	register char           *p;
-{
+int com (register char *p){
 	return ((*p++ == *p) ? com (p) + 1 : 1);
 }
-fpm (u, l, d)
-	char           *u, *l, *d;
-{
+void fpm (char *u,char *l,char *d){
 	register char  *p, *s;
 	int             ip = 0, tab = 0, lp = 0, xold = 0, col, j;
 
