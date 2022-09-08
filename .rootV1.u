@@ -1,0 +1,93 @@
+{OLD:VER
+#
+# АО РТИ им. Академика А.Л. Минца 2022/09/09  Булов B.Г.(V.Bulov@gmail.ru) version 1.0
+#
+предыдущее меню:<PRED
+}
+{OLD
+@0 0
+#   ******   ***   *****   *    *           *******  *******   *****   *******
+#   *     *   *   *     *  *   *               *     *        *     *     *
+#   *     *   *   *        *  *                *     *        *           *
+#   *     *   *    *****   ***     *******     *     *****     *****      *
+#   *     *   *         *  *  *                *     *              *     *
+#   *     *   *   *     *  *   *               *     *        *     *     *
+#   ******   ***   *****   *    *              *     *******   *****      *
+Логи      :<log
+Контролер :<sctl
+Диск      :<diskDD
+Версия    :<VER
+Help      :export HLP="f_" ; arcconf.sh
+установки :<-set
+}
+{OLD:log
+@0 0
+#                      ***   ***   ***** *   *
+#                     *  *  *   *  *   * *  **
+#                    *   *  *   *  *     * * *
+#                    *   *  *   *  *     **  *
+#                    *   *   ***   *     *   *
+Очистить        .:arcconf.sh LOG_CLEAR
+Посмотреть       : arcconf.sh LOG_SHOW | less
+предыдущее меню:<PRED
+}
+{OLD:sctl
+@0 0
+#
+#                       Работа с arcconf
+#
+предыдущее меню:<PRED
+Диски контролера            .: arcconf.sh  GET_PD | less
+Логические диски контролера  :arcconf.sh  GET_LD
+Статус с контролера          :arcconf.sh  GETSTATUS
+Текущее состояние -a         :(export KEY=a; arcconf.sh TEST_SHOW | tee disk.txt )
+Текущеe состояние -x         :(export KEY=x; arcconf.sh TEST_SHOW | tee disk.txt )
+Посмотреть re                    : re disk.txt
+Посмотреть TC отдельные поля     :arcconf.sh GET_PD_S
+Сохранить состоятие {SN}.txt     :arcconf.sh SAVE
+Внести даные  {SN}.txt           : re Itog.csv $(ls -rt | tail -n1)
+Выбрать и сохранить поля в отчете:есho "в разработке"
+установки :<-set
+}
+{OLD:diskDD
+@0 0
+#
+#                       Чтение, запись smart test дискa
+#
+Сохранить состоятие {SN}.txt  (0):arcconf.sh SAVE
+Включить сохранение логов -S  (1):arcconf.sh SET_LOG
+Пишем на диск                 (2):arcconf.sh DDW
+Запустить тест длинный        (3):(export TEST=long;  arcconf.sh TEST)
+Запустить тест корокий           :(export TEST=short; arcconf.sh TEST)
+Ждем окончания теста          (4):arcconf.sh WATCH
+Читаем с диска                (5):arcconf.sh DDR
+ddrescue                         :ddrescue --ask --verbose --binary-prefixes --idirect --force /dev/sd${HD} /dev/null disk.map
+Сохранить состоятие {SN}.txt  (0):arcconf.sh SAVE
+Остановить диск               (6):arcconf.sh DDD
+Контролер :<sctl
+установки :<-set
+Предыдущее меню:<PRED
+}
+{OLD:set
+@50 4
+#
+#  Текущие установки
+#
+Предыдущее меню:<PRED
+Диск        [   ]:$PD
+Диск /dev/sd[   ]:$HD
+Контролер   [   ]:$CN
+ЛогичДиск   [   ]:$LD
+Экспандер   [   ]:$EX
+Название[       ]:$NAME
+}
+
+
+
+
+
+
+
+
+
+
