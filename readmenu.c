@@ -60,10 +60,12 @@ int readmenu (char *name,int key){                     //  *+ readmenu ()  Сч�
 		}
 	}
 	fgets (b0, L_SIZ, fp);
-	if(*b0 != '{' ){
-		grep (File, ON);
-		Maska->dir |= OLD;
-		Str = -1;
+	if(*b0 != '#' ){
+	   if(*b0 != '{' ){
+		   grep (File, ON);
+		   Maska->dir |= OLD;
+		   Str = -1;
+	   }
 	}
 	goto old;
 	while (fgets (b0, L_SIZ, fp) != NULL) {
@@ -116,7 +118,7 @@ old:            i = strlen (p = b0);
 			Maska->y = Maska->y > Win->_maxy ? Win->_maxy -1: Maska->y;
 			continue;
 		    case '#':		/* Комментарий или строка в подсказку */
-			if (Maska->dir & OLD) {
+			if (0x0 != Maska && Maska->dir & OLD) {
 				i = i > Xdim - Maska->x ? Xdim - Maska->x : i;
 				p[i + 1] = '\0';
 				s_tab (0, ++Str, i, p + 1, ON);
