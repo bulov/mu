@@ -133,6 +133,7 @@ long            time ();
 #define F_CLEAR (int)_F7
 #define F_HELP  (int)_F15
 #define F_DO    (int)_F16
+#define RSTDIN  "stdin"
 
 extern WINDOW  *Win;
 
