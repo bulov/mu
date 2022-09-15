@@ -1,6 +1,6 @@
 .IGNORE:
 
-DEST          = /u/bvg/bin
+DEST          = /usr/local/bin
 
 EXTHDRS       = rob.h \
 		/usr/include/ctype.h \
@@ -23,16 +23,22 @@ EXTHDRS       = rob.h \
 
 HDRS          = mu.h
 
-LDFLAGS       =
+LDFLAGS       =  -Wl,--copy-dt-needed-entries
 
 #CFLAGS        =  -g -I/usr/include/sys/ -I/usr/include/gcc/sys/ -I/usr/include/gcc/ -I/usr/include/ -DM_TERMINFO  -L/usr/local/lib/gcc
 #CFLAGS        =  -O -DM_TERMINFO
 CFLAGS        =  -g -DM_TERMINFO
 
-LIBS          =  dp_io.new/dp_io.a -lcurses\
+#LIBS          =  dp_io.new/dp_io.a -lcurses
+#LIBS          =   -lcursesw.so.6.1
+#LIBS          =   /usr/lib/x86_64-linux-gnu/libncursesw.a
+LIBS          =   /usr/lib/x86_64-linux-gnu/libncursesw.so.6.1
 #
-LIBS          =   -lcursesw
+#LIBS          =    /usr/lib/x86_64-linux-gnu/libncursesw.a
+#/usr/lib/x86_64-linux-gnu/libncursesw.a
+#LIBS          =   -lncurses
 
+# /usr/lib/x86_64-linux-gnu/libncurses.so
 
 #LINKER        =    gcc
 LINKER        =    gcc
