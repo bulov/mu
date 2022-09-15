@@ -599,7 +599,6 @@ void drawline (struct maska *ms){        // *+ drawline ()  Рисовать с�
 
        if ( ms && ms->cur ){
 	   s = ms->cur->t;
-//           e = ms->cur->e ? ms->cur->e : s ;   // enviroments
 	   e = ms->cur->e;
 	   x = ms->x + ms->cur->x;
 	   l = ms->cur->l;
