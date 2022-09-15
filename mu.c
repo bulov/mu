@@ -20,6 +20,7 @@ char    head[] = "\n\
 -+  @xx yy                                - координаты привязки меню
 -+  !ДЕЙСТВИЕ                             - выполняется при входе в это меню.
 -+  ТЕКСТ[       ]:$Environ               - издать setenv и сохранить .save.u
+-+  ТЕКСТ[       ]:\$Environ              - \$ если вызываем из bash  mu <<EOL
 -+  ТЕКСТ:&                               - перенести в строку редактирования.
 -+  ТЕКСТ:ДЕЙСТВИЕ                        - выполнить указанное действие.
 -+  ТЕКСТ:<ИМЯ_ФАЙЛА_С_МЕНЮ               - перейти (прочитать) в новое меню.
@@ -100,7 +101,7 @@ int main (argc, argv)
 	struct maska   *ms;
 	char           *cp;		/* char pointer */
 	char           *file = "prot.u";
-
+	long           jmpErr;
 	setlocale(LC_ALL, "ru_RU.UTF-8");
 //        setlocale(LC_ALL, "ru_RU.utf-8");
 	for (argv++, argc--;(cp = *argv) != NULL; argv++, argc--) {
@@ -131,7 +132,7 @@ int main (argc, argv)
 			}               /* switch */
 		}                       /* while  */
 	}                               /* for    */
-	initscr();
+	Win = initscr();
 	Draw=OFF;          /* Проверять environ */
 	dpbeg ();
 	mu_set (ON);
@@ -142,22 +143,24 @@ int main (argc, argv)
 	Rew = ON;
 	Del = ON;
 	dpo (_CL);
-	if (setjmp (Ext) || setjmp (Env)) {
+	if (jmpErr = setjmp (Ext) || setjmp (Env)) {
+//                   printf("longjmp < %d", jmpErr);
 stop:                dpo (_CL);
 		dpend ();
 		mu_set (OFF);
 		closelog(); /* vsi */
 		exit (0);
 	}
+	if ( !isatty(fileno(stdin)) )          // если не /dev/tty
+	   firstmenu = RSTDIN;
 	if ((ms = grep (firstmenu, OFF)) == NULL) {
-		err ("Нет такой маски %s", firstmenu);
-		longjmp (Ext, _K0);
+	   err ("Нет такой маски %s или %s", firstmenu, RSTDIN);
+	   longjmp (Ext, _K0);
 	}
 	signal (SIGCLD, chld_int);
 	signal (SIGALRM, clck_int);
 	signal (SIGPIPE, pipe_int);
 	DPR_CLEAN = Null;
-/*        system("stty -a");/**/
 	openlog(getlogin(), 0, 0); /* vsi */
 	Stop = 0;
 	for (;;){
@@ -171,13 +174,13 @@ struct maska *choise (struct maska *m){      //  *+ choise ()    Выбор в �
 	struct pol     *to, *pol, *save, *pl;
 	int             c,poz;
 	static char    *acts[] = {
-				  "F0", "F1", "^A", "^H", "F-", "RETURN", NULL
+				  "F1", "F2", "^A", "^H", "F-", "RETURN", NULL
 	};
 	static char    *helps[] = {
-				   " Вход/выход в/из меню ",
-				   " Вход во встроенное меню ",
-				   " Перерисовать экран ",
 				   " Выдать справку ЭТУ ",
+				   " Вход/выход в/из меню ",
+				   " Перерисовать экран ",
+				   " Вход во встроенное меню ",
 				   " Вызвать редактор ",
 				   " Выполнить действие ",
 				   NULL
@@ -558,6 +561,10 @@ int in_menu (){        //  *+ in_menu ()   Встроенное меню
 	return (OFF);
 }
 void e_item (register struct pol *k){       //  *+ e_item ()    Выделение строк
+       if ( 0x0 == k ){
+	   printf ("ошибка описания поля в маске %s", Maska->menu);
+	   longjmp (Ext, 222);
+	}
 	register int x = Maska->x + k->x;
 	register int y = Maska->y + k->y;
 
@@ -584,12 +591,22 @@ void l_item (){         //  *+ l_item () Гашение строки
 		attroff ( A_UNDERLINE );
 }
 void drawline (struct maska *ms){        // *+ drawline ()  Рисовать строку
-	register char  *s = ms->cur->t;
-	register char  *e = ms->cur->e;
-	register int    x = ms->x + ms->cur->x;
-	register int    l = ms->cur->l;
+	register char  *s;// = ms->cur->t;
+	register char  *e;// = ms->cur->e;
+	register int    x;// = ms->x + ms->cur->x;
+	register int    l;// = ms->cur->l;
 	int             key, keyE=0;
 
+       if ( ms && ms->cur ){
+	   s = ms->cur->t;
+//           e = ms->cur->e ? ms->cur->e : s ;   // enviroments
+	   e = ms->cur->e;
+	   x = ms->x + ms->cur->x;
+	   l = ms->cur->l;
+       }else{
+	   printf("Ошибка в Рисовать строку drawline ms=%0X ms->cur=%0X",ms, ms->cur);
+	   longjmp(Ext,777);
+       }
        if( ms->cur->key & MENU){
 	   dpo('>');
        }else{
@@ -610,7 +627,7 @@ void drawline (struct maska *ms){        // *+ drawline ()  Рисовать с�
 		       dpo (*s);
 		   }
 	       }else{
-		   if ( keyE && 0 != *e ){
+		   if ( keyE && 0x0 != e && 0 != *e ){ // RSTDIN
 		       dpo ('>');
 		   }else
 		       dpo (*s);

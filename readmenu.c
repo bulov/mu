@@ -38,6 +38,7 @@ int readmenu (char *name,int key){                     //  *+ readmenu ()  Сч�
 	char          **pt, **pd;
 	char           *file;
 	char           *menu;
+	int             key_RSTDIN=0;
 
 	if (key){
 		file = File;
@@ -53,7 +54,12 @@ int readmenu (char *name,int key){                     //  *+ readmenu ()  Сч�
 			   return (ON);
 		   }
 		}else{
-		   return (ON);
+		   if ( !strcmp(RSTDIN,name) ) {
+		       strcpy(b0,RSTDIN);
+		       fp=stdin;
+		       key_RSTDIN = 1;
+		   }else
+		       return (ON);
 		}
 		if (key) {
 			strcpy (File = (char*)malloc (strlen (b0+1)), b0);
@@ -112,13 +118,13 @@ old:            i = strlen (p = b0);
 			if (Maska->dir & MSK)
 				break;
 			continue;
-		    case '@':		/* x,y */
+		    case '@':           /* x y */
 			sscanf (p + 1, "%d%d", &Maska->x, &Maska->y);
 			Maska->x = Maska->x > Win->_maxx ? Win->_maxx -1: Maska->x;
 			Maska->y = Maska->y > Win->_maxy ? Win->_maxy -1: Maska->y;
 			continue;
 		    case '#':		/* Комментарий или строка в подсказку */
-			if (0x0 != Maska && Maska->dir & OLD) {
+			if (Maska && Maska->dir & OLD) {
 				i = i > Xdim - Maska->x ? Xdim - Maska->x : i;
 				p[i + 1] = '\0';
 				s_tab (0, ++Str, i, p + 1, ON);
@@ -158,7 +164,10 @@ old:            i = strlen (p = b0);
 			*pd++ = strcpy (malloc (strlen (ss) + 1), ss);
 		}
 	}
-	fclose (fp);
+	if ( key_RSTDIN )
+	   freopen ("/dev/tty","r",stdin);
+	else
+	   fclose (fp);
 	if(file != NULL)
 		File = file;
 	return(0);

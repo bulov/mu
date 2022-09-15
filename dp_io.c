@@ -11,7 +11,7 @@ void dpbeg() {
        static int  nfirst = 0;
 
        if( !( nfirst++ )){
-	      system (" stty sane" );
+//pipe              system (" stty sane" );
 	      Win = initscr();        /* curses bvg */
        }
        noecho();

@@ -41,7 +41,8 @@ void s_pol (int x,int y,int l,char *p){      // *+ s_pol()      Запомнит
 		*n->t = '\0';
 		n->d = NULL;
 	}
-       if (n->d && *n->d == '$' && index(n->t,'[') != 0) {  /* Подстановка из environ */
+//       if (n->d && *n->d == '$' && index(n->t,'[') != 0) {  /* Подстановка из environ */
+       if ( index(n->t,'[') != 0) {  /* Подстановка из environ */
 	   n->key |= ENV;
        }
 	n->next = save->next;
@@ -206,11 +207,9 @@ void draw_pol (struct maska   *m, int key_env){ //  *+ draw_pol()   Рисова
 	if (m->dir & MSK) {
 		attron ( A_UNDERLINE );
 	}
-
        do {
 	   if (l->key & ENV && key_env) {
 	       char           *sn, *p, *getenv ();
-
 	       if (l->d && *l->d == '$' ) {  /* Подстановка из environ */
 		   sn = getenv (l->d + 1);
 		   sn = sn ? sn : "";
@@ -227,9 +226,12 @@ void draw_pol (struct maska   *m, int key_env){ //  *+ draw_pol()   Рисова
 		       strncpy(l->t,sn,l->l);
 		       *(l->t + l->l) = '\0';
 		   }
+	       }else{
+		   err("пустое поле ENV ждем 'текст[   ]:$ENV' пришло '%s'", l->t );
 	       }
 	   }
-	   if (l->key & DATE || l->key & TIM  ) {  /* подставить время дату */
+//           if (0x0 != l && ( l->key & DATE || l->key & TIM)  ) {  /* подставить время дату */
+	   if (( l->key & DATE || l->key & TIM)  ) {  /* подставить время дату */
 	       char mas[128];
 	       tab_date(mas,l->d,1);
 	       strncpy(l->t,mas,l->l);
@@ -238,16 +240,16 @@ void draw_pol (struct maska   *m, int key_env){ //  *+ draw_pol()   Рисова
 /*               dpp (m->x + l->x -3, m->y + l->y);
 /*               dps("<  ");
 /*           }else{
-*/               dpp (m->x + l->x , m->y + l->y);
+*/
+	       dpp (m->x + l->x , m->y + l->y );
 /*           }
 */           m->cur = l;
 	   drawline (m);
 	   l = l->next;
-	} while (l != m->pol);
+	} while (l != m->pol && 0x0 != l );
 	if (m->dir & MSK) {
 		attroff ( A_UNDERLINE );
 	}
-
 }
 void display (){       //  *+ display()    Рисовать все меню
 	register struct maska *m;
