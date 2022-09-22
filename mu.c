@@ -76,6 +76,7 @@ char    head[] = "\n\
 #include <locale.h>
 #include <unistd.h>
 #include <setjmp.h>
+#include <time.h> // time_t
 #define BACK    1			/* отступ влево для пометки       */
 #define MARK    '>'			/* символ пометки */
 #define unify( c) ( ((c) & ~0240 ) & 0377 )
@@ -149,6 +150,7 @@ stop:                dpo (_CL);
 		dpend ();
 		mu_set (OFF);
 		closelog(); /* vsi */
+		system("stty sane");
 		exit (0);
 	}
 	if ( !isatty(fileno(stdin)) )          // если не /dev/tty
@@ -169,12 +171,25 @@ stop:                dpo (_CL);
 	       goto stop;
 	}
 }
+int fistChar(char fC, int cc){
+   char   utf8[] ="йцукенгшщзхъфывапролджэячсмитьбюЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭ/ЯЧСМИТЬБЮ";
+   char   ascii[]="qwertyuiop[]asdfghjkl;'zxcvbnm,.QWERTYUIOP[]ASDFGHJKL;'<ZXCVBNM,.";
+   char   *ss;
+
+   for(ss = utf8 ; *ss != 0; ss++ ){
+       if( *(ss) == fC ){
+	   fC = ascii[(ss-utf8)/2]  ;
+	   break;
+       }
+   }
+   return (fC & 0xff);
+}
 struct maska *choise (struct maska *m){      //  *+ choise ()    Выбор в меню
 	register int    cc;          /* команда */
 	struct pol     *to, *pol, *save, *pl;
 	int             c,poz;
 	static char    *acts[] = {
-				  "F1", "F2", "^A", "^H", "F-", "RETURN", NULL
+				  "F1", "F2", "F3", "F9", "F12", "RETURN", NULL
 	};
 	static char    *helps[] = {
 				   " Выдать справку ЭТУ ",
@@ -210,8 +225,11 @@ struct maska *choise (struct maska *m){      //  *+ choise ()    Выбор в �
 	for (;;) {
 		e_item (pol);
 		c = dpi ();
+//                        err("пришло %0X",c);
+
 BEGIN:
 		switch (c) {
+
 /*                  case _F8:
 			if(Ks){
 				kioutf = 1;
@@ -308,6 +326,7 @@ execut:                 if (c > 0){
 				}
 			continue;
 		    case ctrl (A):
+		    case _K(3):
 			dpbeg();
 			dpo (_CL);
 			break;
@@ -341,11 +360,14 @@ execut:                 if (c > 0){
 				goto BEGIN;
 			}
 			if ( isprint (c) ) {
+				int   t;
 				cc = toupper (c);
+//                        err("пришло %0X",c);
 				for (to = pol->next; to != pol; to = to->next){
-					if ((toupper (*to->t & 0xff) == cc
-						  ||  *to->t & 0xff  == c )
-						  && to->key & DSP ) {
+				   t = fUTF8(to->t) ? fistChar(*(to->t+1),cc) : *to->t & 0xff;
+//                        err("сравним %0X",t);
+//                                        if (((toupper (t) == cc ) ||  t  == c ) && to->key & DSP ) {
+					if ((( t == cc ) ||  t  == c ) && to->key & DSP ) {
 						l_item ();
 						pol = to;
 						break;
@@ -387,6 +409,7 @@ int execute (register struct pol *pol){         //   *+ execute ()   Выпол�
 	char           *oblom, buf[L_SIZ];
 	struct maska   *new, *ret, *m;
 	int            l;
+	time_t         beginT ,endT;
 
 	if ((s = pol->d) == NULL){
 		err("Пустая команда");
@@ -457,11 +480,20 @@ int execute (register struct pol *pol){         //   *+ execute ()   Выпол�
 				return (ON);
 		return ((long int)ret);
 	}
-	if( pol->key & SYS1 )          /* vsi */
-	   syslog(LOG_INFO|LOG_LOCAL0, "START %s", pol->t);     /* vsi */
+	if( pol->key & SYS1 ){          /* vsi */
+	    time (&beginT); // note time before execution
+	    syslog(LOG_INFO|LOG_LOCAL0, "START %s <%0X>", pol->t ,pol);     /* vsi */
+	}
 	dosystem (s, *s == ' ' ? OFF : ON);
-	if( pol->key & SYS1 )          /* vsi */
-	   syslog(LOG_INFO|LOG_LOCAL0, "STOP  %s", pol->t);     /* vsi */
+	if( pol->key & SYS1 ){          /* vsi */
+	   int h,m,s;
+	   time (&endT); // note time after execution
+	   double duration = difftime (endT,beginT);
+	   s=(int)duration%60;
+	   m=((int)duration%3600)/60;
+	   h=duration/3600;
+	   syslog(LOG_INFO|LOG_LOCAL0, "STOP  %s <%0X> %d:%.2d:%.2d", pol->t, pol ,h,m,s);     /* vsi */
+	}
 	return (ON);
 }
 int dosystem (char *s,int key){        //  *+ dosystem ()  Выполнить команду системы.
@@ -498,10 +530,10 @@ int in_esc (int c){        //  *+ in_esc()     Выбрать и выполни�
 		}
 		return (ON);
 	}
-	if(c == (int)_K1 || (c == F_DO && Maska->dir & OLD)){
+	if(c == (int)_K1 || (int)_K(9) || (c == F_DO && Maska->dir & OLD)){
 		return(in_menu ());/* Встроенное меню */
 	}
-	if(c == F_DO){
+	if(c == F_DO || c == (int)_K(9) ){
 		if (Maska->help) {
 			register struct maska *o = Maska->help;
 			c = help (o->x, o->y, &o->pol->t, &o->pol->d, ON);
@@ -525,7 +557,7 @@ int in_menu (){        //  *+ in_menu ()   Встроенное меню
 	};
 	static char    *helps[] = {
 				   "выход из системы",
-				   "выход в СиШелл",
+				   "выход в Шелл",
 				   "список файлов текущего каталога",
 				   "изменить текущий каталог",
 				   "выход из командного меню",
@@ -544,10 +576,10 @@ int in_menu (){        //  *+ in_menu ()   Встроенное меню
 	    case 0:
 		longjmp (Ext, ON);
 	    case 1:
-		dosystem ("csh -f", OFF);
+		dosystem ("/bin/bash -f", OFF);
 		break;
 	    case 2:
-		dosystem ("ls -sa", ON);
+		dosystem ("ls -lsa|less", ON);
 		break;
 	    case 3:
 		buf[0] = 0;

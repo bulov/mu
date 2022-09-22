@@ -6,6 +6,7 @@ struct s_dpd { int xdim,ydim,xold,yold; } *dpd();
 #define _K0    KEY_F0
 #define _K1    KEY_F0+1
 #define _K2    KEY_F0+2
+#define _F3    KEY_F0+3
 #define _F6    KEY_F0+6
 #define _F7    KEY_F0+7
 #define _F8    KEY_F0+8
