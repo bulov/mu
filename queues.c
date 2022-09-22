@@ -5,6 +5,8 @@ void s_pol (int x,int y,int l,char *p){      // *+ s_pol()      Запомнит
 	register char  *s;
 	static struct pol *save;
 	static short    nom;
+	static char   utf8[] ="йцукенгшщзхъфывапролджэячсмитьбюЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭ/ЯЧСМИТЬБЮ";
+	static char   ascii[]="qwertyuiop[]asdfghjkl;'zxcvbnm,.QWERTYUIOP[]ASDFGHJKL;'<ZXCVBNM,.";
 
 	n = (struct pol *) malloc (SIZ(pol));
 	if (Maska->pol == NULL) {
@@ -36,6 +38,17 @@ void s_pol (int x,int y,int l,char *p){      // *+ s_pol()      Запомнит
 			CALLOC (n->t, p, n->l);
 			n->d = NULL;
 		}
+		if ( fUTF8(n->t)){
+		   n->h=0;
+		   for(s = utf8 ; *s != 0; s++  ){
+		      if( *(s) == *(n->t+1) ){
+			  n->h = ascii[(s-utf8)/2];
+			  break;
+		      }
+		   }
+	       }else{
+		   n->h = *n->t;
+	       }
 	} else {
 		n->t = (char*)malloc (n->l+1);
 		*n->t = '\0';

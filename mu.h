@@ -46,6 +46,7 @@ struct poz {
 struct pol {
 	char            x, y, l;        /* Координаты поля и его длинна */
 	char           *t;		/* Куда писать текст */
+	char            h;              /* hot key ascci */
 	char           *e;              /* Куда писать текст environ*/
 	char           *d;              /* Строка действий */
 	struct pol     *next;		/* Следущее поле */
