@@ -1,4 +1,5 @@
 #include <malloc.h>
+#include <unistd.h>
 #include <stdio.h>
 #include "mu.h"
 extern char   **environ;
@@ -102,7 +103,20 @@ void mu_set(int key){      //  *+ mu_set()     Извлеч и сохранит�
 
 	fp = NULL;
 	if(key){        /* Начало работы */
-		setenv (Name, Name, 1);
+	       {
+		   extern char *pidFirstMU;    /* первый в стеке mu  */
+		   if ( NULL == getenv (pidFirstMU)){
+		       pid_t pFMU;
+		       char buf[32];
+		       pFMU=getpid();        // рекурсивный вызов mu
+		       sprintf(buf,"%d",pFMU);
+		       setenv (pidFirstMU, buf, 1);  //  killpg(pFMU, SIGTERM); mu.c завершить все процессы по f10
+		       getpgid(0);        // рекурсивный вызов mu c одной группой
+		   }
+		}
+		unsetenv(Name);
+		setenv  (Name, Name, 0);
+//                setenv  (Name, Name, 1);
 			if ((fp = fopen (Setenv, "r")) != NULL) {
 			while (fgets (buf, L_SIZ, fp) != NULL) {
 				if (!(i = strlen (buf)))
@@ -127,7 +141,7 @@ void mu_set(int key){      //  *+ mu_set()     Извлеч и сохранит�
 				if( !fp )
 					if ((fp = fopen (Setenv, "w")) == NULL)
 						return;
-				if(**ep != '_'){
+				if(**ep != '_' ){
 					fputs (*ep, fp);
 					fputc ('\n', fp);
 				}

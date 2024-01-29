@@ -21,13 +21,16 @@ void dpbeg() {
        DP_ON =1;
 }
 void dpend() {          //          ПЕРЕКЛЮЧЕНИЕ В ОБЫЧНЫЙ РЕЖИМ
+       extern char *rmcup;
        if( !DP_ON)
 	       return;
      /*  keypad(Win,FALSE);      /* init f-keyboard */
        refresh();
-       endwin();
+//     endwin();
        doupdate();
        reset_shell_mode();/**/
+       if(rmcup != NULL)
+	   puts(rmcup);   // rmcup=\E[?1049l // Переключить на терминал для scroll
        DP_ON = 0;
 }
 /* ВЫВОД ОДНОГО СИМВОЛА С БУФЕРИЗАЦИЕЙ */
@@ -47,8 +50,14 @@ int dpo( int cc )
 }
 /* ВВОД СИМВОЛА */
 int dpi() {
+
+       int c;
        touchwin(Win);
-       return ( getch() );
+       c=getch();
+       if ( c == EOF ){
+	   longjmp (Ext, _K0);
+       }
+       return ( c );
 }
 /* УСТАНОВ КУРСОРА В ПОЗИЦИЮ (x,y) */
 int dpp(int x, int y )
