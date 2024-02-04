@@ -59,7 +59,7 @@ int red (int x,int y,char *s,int mx,int pos){
 	int             rewr=0, max;
 	int             iUTF8, RcyflagUTF8=0;
 	static char    *acts[] = {
-				  "cr","del","K6","K5","K8","^A","K7","KR","KL","ht","stx","nl","KB",0
+				  "cr","Backspace","Del","Ins","K8","^A","K7","KR","KL","ht","stx","nl","KB",0
 	};
 	static char    *helps[] = {
 				"Выход из редактора",
@@ -185,8 +185,9 @@ CON:
 				continue;
 			dpo ('\b');
 			pos--;		/* left and dc */
-		    case _K6:		/* delete char */
-		    case KEY_F(6):           /* delete char */
+		    case KEY_DC:        /* delete char */
+		    case _K6:
+		    case KEY_F(6):
 			if (!s[pos])
 				continue;	/* нечего */
 			if (!(Red & R_STR) || !dpo (_DC))
@@ -200,6 +201,7 @@ CON:
 			ceol (0, dpd ()->ydim - 1);
 			rewr = 0;
 			break;
+		    case KEY_IC:
 		    case _K5:           /* Вставка замена */
 			Red = Red & R_IorS ? Red & ~R_IorS : Red | R_IorS;
 			ceol(0,dpd()->ydim-1);

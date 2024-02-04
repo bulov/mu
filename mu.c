@@ -115,6 +115,8 @@ int main (argc, argv)
 	for (argv++, argc--;(cp = *argv) != NULL; argv++, argc--) {
 		while (*cp != 0 ) {
 			switch (*cp++) {
+			    case 'v':
+			       { puts ("ver 3.0-2024-02-03\n"); exit (0) ;}
 			    case 'h':
 				USAGE();
 			   case 'm':            /* Файл с меню */
@@ -168,8 +170,8 @@ stop:                dpo (_CL);
 		       sscanf(pFMUc,"%d",&fFMU);
 		       if ( fFMU != pFMU ){
 			   gFMU=getpgid(0);
-			   printf ("\nfFMU=%d pFMU=%d gFMU=%d \n",fFMU,pFMU,gFMU);
-			   sleep(3);
+//                           printf ("\nfFMU=%d pFMU=%d gFMU=%d \n",fFMU,pFMU,gFMU);
+			   sleep(1);
 			   killpg(gFMU, SIGTERM);                    // завершить все процессы по f10
 		       }
 		   }
@@ -183,7 +185,7 @@ stop:                dpo (_CL);
 	   err ("Нет такой маски %s или %s", firstmenu, RSTDIN);
 	   longjmp (Ext, _K0);
 	}
-	signal (SIGCLD, chld_int);
+	signal (SIGCLD,  chld_int);
 	signal (SIGALRM, clck_int);
 	signal (SIGPIPE, pipe_int);
 	DPR_CLEAN = Null;
@@ -386,8 +388,8 @@ execut:                 if (c > 0){
 	}				/* endfor(;;) */
 }
 int execute (register struct pol *pol){         //   *+ execute ()   Выполнение строк меню ( старое )
-	register char  *s, *end;
-	char           *oblom, buf[L_SIZ];
+	register char  *s, *end, *v, *b;
+	char           *oblom, buf[L_SIZ],tmp[L_SIZ];
 	struct maska   *new, *ret, *m;
 	int            l;
 	time_t         beginT ,endT;
@@ -410,8 +412,19 @@ int execute (register struct pol *pol){         //   *+ execute ()   Выпол�
 		   x = m->x + pol->x + (ss - pol->t) - tUTF8(pol->t ,ss - pol->t);
 		   y = m->y + pol->y;
 		   Red = R_SO | R_TAIL | R_NEXT ;
-		   red (x+2, y, buf, num-1, 0);
+		   red (x+2, y, buf, num-1, 0);            //   V
+		   for (b=buf; ' ' == *b && 0 != *b; b++)  // "   xxxx   "
+			;                                  //       V
+		   for (v=buf; 0 != *b; v++, b++)          // "xxxx      "
+		       *v=*b;                              //
+		       *v=0;                               //          V
+		   for (; b != v ; b--)                    // "xxxx   000"
+			*b=0;                              //       V
+		   for (; ' ' == *b ; b--)                 // "xxxx000000"
+		       *b=0;
+//                   printf("<%s><%s><%s>\n",buf,v,b);
 		   setenv (s + 1, buf, 1);
+		   setenv (strcat(strcpy(tmp,"MU_"),s+1), "", 1);
 		   lb = strlen(buf);
 		   le = strlen(pol->e);
 		   if ( le < lb){

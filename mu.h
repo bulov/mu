@@ -11,7 +11,7 @@
 */
 #define OFF      0                       /* Выключить ключ */
 #define ON       -1                      /* Его включить */
-#define L_SIZ   128			/* Длинна стоки  */
+#define L_SIZ   128                     /* Длинна стоки  */
 					/* for maska->dir */
 #define OLD     0x01                    /* Старое меню */
 #define MSK     0x02                    /* Маска */
@@ -194,10 +194,3 @@ int readmenu (char *name,int key);                     //  *+ readmenu ()  Сч�
 int stir (char ss[],int j);                            //  *+ stir()       Упаковать символы в целое
 void par (char *p);                                    //  *+ par()        Разбор строки описания поля
 void vc(char *p,int key,int val);
-int blklen (register char **av);
-char **blkcpy (char **oav,register char ** bv);
-char **blkend (register char **up);
-char **blkcat (char **up,char **vp);
-char **blkspl (register char **up,register char **vp);
-char *strspl (char *cp,char *dp);
-void setenvMy (char *b_name,char *b_val);

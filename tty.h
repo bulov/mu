@@ -30,8 +30,8 @@ struct s_dpd { int xdim,ydim,xold,yold; } *dpd();
 /*#define _KR    KEY_RIGHT       /* 0405 Sent by terminal right arrow key */
 /*#define _KB    KEY_BACKSPACE   /* 0407 Sent by backspace key */
 
-/* в#define _GE    _GS      /* включить псевдографику */
-/* в#define _GS    _GS      /* включить псевдографику */
+/* #define _GE    _GS      /* включить псевдографику */
+/* #define _GS    _GS      /* включить псевдографику */
 
 /*  #define _SE    _SE      /*  выкл. режима выделения строки        */
 /*  #define _SO    _SO      /*  вкл. режим выделения строки          */
