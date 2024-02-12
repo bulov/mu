@@ -110,7 +110,8 @@ int main (argc, argv)
 	char           *cp;		/* char pointer */
 	char           *file = "prot.u";
 	long           jmpErr;
-	int            keyHelp=0;
+	int            keyHelp=0,fFMU;
+	char          *pFMUc;
 	setlocale(LC_ALL, "ru_RU.UTF-8");
 	for (argv++, argc--;(cp = *argv) != NULL; argv++, argc--) {
 		while (*cp != 0 ) {
@@ -155,28 +156,21 @@ int main (argc, argv)
 	Del = ON;
 	dpo (_CL);
 	if (jmpErr = setjmp (Ext) || setjmp (Env)) {
-stop:                dpo (_CL);
+stop:
 		dpend ();
 		mu_set (OFF);
 		closelog(); /* vsi */
-//                system("stty sane");
 		if (keyHelp )
 		   system ("mu -h");
-		{
-		   char    *pFMUc;
-		   int      pFMU,fFMU,gFMU;
-		   if ( NULL != (pFMUc = getenv (pidFirstMU)) ){ //первый в стеке mu
-		       pFMU=getpid();
-		       sscanf(pFMUc,"%d",&fFMU);
-		       if ( fFMU != pFMU ){
-			   gFMU=getpgid(0);
-//                           printf ("\nfFMU=%d pFMU=%d gFMU=%d \n",fFMU,pFMU,gFMU);
-			   sleep(1);
-			   killpg(gFMU, SIGTERM);                    // завершить все процессы по f10
-		       }
-		   }
+		if ( NULL != (pFMUc = getenv (pidFirstMU)) ){  //первый в стеке mu
+		    sscanf(pFMUc,"%d",&fFMU);
+		    if ( fFMU != getpid() ){
+			killpg(getpgid(0), SIGTERM);                 // завершить все процессы по f10
+		    }
 		}
-		exit (0);
+		endwin();
+		system("clear");
+		return (0);
 	}
 	if ( !isatty(fileno(stdin)) )          // если не /dev/tty
 	   firstmenu = RSTDIN;
@@ -198,11 +192,13 @@ stop:                dpo (_CL);
 	}
 }
 struct maska *choise (struct maska *m){      //  *+ choise ()    Выбор в меню
+	extern WINDOW  *Win;
+	MEVENT event;
 	register int    cc;          /* команда */
 	struct pol     *to, *pol, *save, *pl;
-	int             c,poz;
+	int             c,poz,y;
 	static char    *acts[] = {
-				  "F1", "F2", "F3", "F9", "F12", "RETURN", NULL
+				  "F1", "Esc", "F3", "F9", "F12", "RETURN", NULL
 	};
 	static char    *helps[] = {
 				   " Выдать справку ЭТУ ",
@@ -218,7 +214,6 @@ struct maska *choise (struct maska *m){      //  *+ choise ()    Выбор в �
 	Maska = m;
 	if (m->dir & HLP)
 		return((struct maska *)ON);
-//                return(ON);
 	if(m->make)
 		dosystem(m->make,OFF);
 	if(m->dir & RUN )
@@ -235,13 +230,29 @@ struct maska *choise (struct maska *m){      //  *+ choise ()    Выбор в �
 	m->dir |= STACK;
 	drawmenu (m,ON);
 	pol = m->pol;
+	mousemask(ALL_MOUSE_EVENTS, NULL); // Get all the mouse events
+	keypad(Win, TRUE);
 	for (;;) {
 		e_item (pol);
 		c = dpi ();
 //                        err("пришло %0X",c);
 BEGIN:
 		switch (c) {
-
+		   case KEY_MOUSE:
+		       if(getmouse(&event) == OK){   /* When the user clicks mouse button */
+			   y = event.y - m->y;
+			   if ( y == pol->y && event.bstate & BUTTON1_DOUBLE_CLICKED ){
+			       goto goCR;
+			   }
+			   for (to = pol->next; to != pol; to = to->next){
+				if ( y == to->y && to->key & DSP ){
+				   l_item ();
+				   pol = to;
+				   break;
+				}
+			   }
+		       }
+		       continue;
 /*                  case _F8:
 			if(Ks){
 				kioutf = 1;
@@ -297,7 +308,7 @@ BEGIN:
 			c = (long int) m;
 			goto execut;
 		    case _cr:          /* выполнить операцию */
-			dpo (' ');     /* стирание метки MARK */
+goCR:                  dpo (' ');      /* стирание метки MARK */
 			if (Maska->dir & MSK
 			     && ( pol->d == NULL || pol->key & ENV )){
 				poz = 0;
@@ -315,7 +326,6 @@ execut:                 if (c > 0){
 				if((m->dir & EXIT ) &&  m->task )
 					clear_tab(&m->task,OFF);
 				return (m);
-//                                return (c);
 			}else if (c){   /* Перерисовать экран */
 				m->dir |= DISPLAY;
 				Maska = m;
@@ -338,20 +348,18 @@ execut:                 if (c > 0){
 					break;
 				}
 			continue;
-		    case ctrl (A):
+		    case ctrl (A):         // Перерисовать экран
 		    case _K(3):
 			dpbeg();
 			dpo (_CL);
 			break;
 		    case KEY_F(10):
-			dpo (' ');	/* стирание метки MARK */
 			longjmp (Ext, _K0);	/* Закончить задачу */
 		    case KEY_F(1):          /* minihelp */
 			dpline (0, Ydim - 1, acts, helps);
 			ceol (0, Ydim - 2);
 			if (m->help) {
 				register struct maska *o = m->help;
-
 				help (o->x, o->y, &o->pol->t, &o->pol->d, OFF);
 			}else{
 				ceol (0, Ydim - 1);
@@ -437,10 +445,6 @@ int execute (register struct pol *pol){         //   *+ execute ()   Выпол�
 		return (OFF);
 	}
 	if (*s == '<') {		/* ТЕКСТ:<МЕНЮ_УСПЕХА:команда:МЕНЮ_НЕУДАЧИ. */
-//               if (*(s+1) == '<') {    /* << iscsi.sh стандартный ввод
-//                  if (dosystem (end, *end == ' ' ? OFF : ON) && oblom != NULL)
-//                      s = oblom;
-//               }
 		s = strcpy (buf, ++s);
 		if (*s == '-') {	/* Не затирать текущее меню */
 			Del = OFF;
@@ -510,10 +514,11 @@ int dosystem (char *s,int key){        //  *+ dosystem ()  Выполнить к
 	signal (SIGCLD, chld_int);
 	dpbeg ();    /**/
 	if (key) {
+		mousemask(0, NULL); // Get all the mouse events
 		DPIS ("---нажми кнопку---");
 		dpi ();
+		mousemask(ALL_MOUSE_EVENTS, NULL); // Get all the mouse events
 	}
-/*        dpo ('\017');   /* SI */
 	dpo (_CL);
 	Rew = ON;
 	Del = ON;

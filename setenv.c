@@ -1,4 +1,3 @@
-#include <malloc.h>
 #include <unistd.h>
 #include <stdio.h>
 #include "mu.h"

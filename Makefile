@@ -31,7 +31,7 @@ CFLAGS        =  -g -DM_TERMINFO
 
 #LIBS          =  dp_io.new/dp_io.a -lcurses
 #LIBS          =   -lcursesw.so.6.1
-#LIBS          =   /usr/lib/x86_64-linux-gnu/libncursesw.a
+#LIBS          =   /usr/lib64/libncursesw.so.6     # Fedora
 LIBS          =   /usr/lib/x86_64-linux-gnu/libncursesw.so.6.1
 #
 #LIBS          =    /usr/lib/x86_64-linux-gnu/libncursesw.a
