@@ -241,8 +241,17 @@ BEGIN:
 		   case KEY_MOUSE:
 		       if(getmouse(&event) == OK){   /* When the user clicks mouse button */
 			   y = event.y - m->y;
-			   if ( y == pol->y && event.bstate & BUTTON1_DOUBLE_CLICKED ){
-			       goto goCR;
+			   if ( event.bstate & BUTTON1_DOUBLE_CLICKED ){
+			       if ( y == pol->y ){
+				   goto goCR;
+			       }else if ( y == m->MM ) {  //строка менюMышь
+				   switch (MenuMouse(event.x - m->x)){
+				       case  1: longjmp (Ext, _K0); break;
+				       case  2: goto goEsc        ; break;
+				       case  3: goto goK3         ; break;
+				       case  4: goto goCR         ; break;
+				   }
+			       }
 			   }
 			   for (to = pol->next; to != pol; to = to->next){
 				if ( y == to->y && to->key & DSP ){
@@ -304,7 +313,7 @@ BEGIN:
 		    case  27:          /* Esc or Alt
 		    case _nl:          /* Вверх по стеку */
 		    case _K(2):        /* Вверх по стеку */
-			dpo (' ');     /* стирание метки MARK */
+goEsc:                  dpo (' ');     /* стирание метки MARK */
 			c = (long int) m;
 			goto execut;
 		    case _cr:          /* выполнить операцию */
@@ -350,7 +359,7 @@ execut:                 if (c > 0){
 			continue;
 		    case ctrl (A):         // Перерисовать экран
 		    case _K(3):
-			dpbeg();
+goK3:                   dpbeg();
 			dpo (_CL);
 			break;
 		    case KEY_F(10):

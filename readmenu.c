@@ -1,8 +1,36 @@
 #include "mu.h"
 #include <ctype.h>
 #define N_HELP (15 * sizeof (char*))
-static int      Com;			/* Обработка командочек */
+static int      Com;                    /* Обработка командочек */
+char    MM[] = "   F10-выход ESC-вверх Enter-Выполнить F3-перерисовать ";
+int     MMx[10];                       // столбец привязки
 
+int fMM(){
+   int     i=0 , key=0;
+   char   *p;
+
+   MMx[i]=0;
+   for (p = MM; 0 != *p ;p++ ){
+       if ( ' ' != *p ){      // Первые пробелы пропустить
+	   key++;
+	   continue;
+       }
+       if ( key ){
+	   if ( ' ' == *p ){
+	       MMx[++i] = p - MM - nUTF8(MM,p - MM);
+	   }
+       }
+   }
+   MMx[++i] = 0;
+   return(p-MM);
+}
+int MenuMouse(int x){
+   int i ;
+   for (i = 0; x > MMx[i] && i < sizeof MMx; i++){
+       continue;
+   }
+   return(sizeof MMx == i?-1:i);
+}
 char*
 ssetenv(char *p)
 {
@@ -39,6 +67,7 @@ int readmenu (char *name,int key){                     //  *+ readmenu ()  Сч�
 	char           *file;
 	char           *menu;
 	int             key_RSTDIN=0;
+	int             I;
 
 	if (key){
 		file = File;
@@ -66,6 +95,7 @@ int readmenu (char *name,int key){                     //  *+ readmenu ()  Сч�
 		}
 	}
 	fgets (b0, L_SIZ, fp);
+	I=fMM();
 	if(*b0 != '#' ){
 	   if(*b0 != '{' ){
 		   grep (File, ON);
@@ -128,6 +158,15 @@ old:            i = strlen (p = b0);
 				i = i > Xdim - Maska->x ? Xdim - Maska->x : i;
 				p[i + 1] = '\0';
 				s_tab (0, ++Str, i, p + 1, ON);
+			}
+			continue;
+		    case '%':           /* МенюМышь */
+			if (Maska && Maska->dir & OLD) {
+			   i = I;
+			   i = i > Xdim - Maska->x ? Xdim - Maska->x : i;
+			   p[i + 1] = '\0';
+			   s_tab (0, ++Str, i, MM, ON);
+			   Maska->MM = Str;
 			}
 			continue;
 		    case '!':		/* команды, выполняемые при входе в меню */

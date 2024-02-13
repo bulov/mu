@@ -69,6 +69,7 @@ struct maska {
 	char            divide;         /* Символ разделитель полей */
 	int             x, y;           /* Точка привязки */
 	int             dir;            /* Управление */
+	int             MM;             // Строка меню mouse // F10-выход ESC-вверх F3-перерисовать
 	struct task {
 		struct task    *next;	/* Указатель на следущую задачу */
 		char           *name;   /* Имя транзакции(строка под запуск) */
@@ -108,6 +109,7 @@ EXTERN jmp_buf       Env, Ext, Exec;    /* Environment ptr for longjump */
 EXTERN jmp_buf       E_pipe, E_clck;    /* Environment ptr for longjump */
 EXTERN int           Pc;                /* Работа с PC VGA */
 EXTERN int           Draw;              /* Проверять environ */
+
 /*
 ** Типы функций
 */
@@ -194,3 +196,5 @@ int readmenu (char *name,int key);                     //  *+ readmenu ()  Сч�
 int stir (char ss[],int j);                            //  *+ stir()       Упаковать символы в целое
 void par (char *p);                                    //  *+ par()        Разбор строки описания поля
 void vc(char *p,int key,int val);
+int MenuMouse(int x);                                  //  Встроенное меню
+int nUTF8(char *cline ,int thiscol);    // Сколько Russian UTF8 символов в строке до позиции thiscol+UTF8  на экране
