@@ -2,8 +2,9 @@
 #include <ctype.h>
 #define N_HELP (15 * sizeof (char*))
 static int      Com;                    /* Обработка командочек */
-char    MM[] = "   F10-выход ESC-вверх Enter-Выполнить F3-перерисовать ";
+char    MM[] = "   F10-Выход ESC-Вверх Enter-Делать F3-Перерисовать ";
 int     MMx[10];                       // столбец привязки
+int     MMi;                           // ключь первого прохода
 
 int fMM(){
    int     i=0 , key=0;
@@ -17,19 +18,19 @@ int fMM(){
        }
        if ( key ){
 	   if ( ' ' == *p ){
-	       MMx[++i] = p - MM - nUTF8(MM,p - MM);
+	       MMx[++i] = p - MM - tUTF8(MM,p - MM) + 1 ;
 	   }
        }
    }
-   MMx[++i] = 0;
-   return(p-MM);
+   MMx[i+1] = 0;
+   return(strlen(MM));
 }
 int MenuMouse(int x){
    int i ;
-   for (i = 0; x > MMx[i] && i < sizeof MMx; i++){
-       continue;
+   for (i = 1; x > MMx[i] && 0 != MMx[i]; i++){
+	   continue;
    }
-   return(sizeof MMx == i?-1:i);
+   return(0 == MMx[i]?-1:i);
 }
 char*
 ssetenv(char *p)
@@ -67,7 +68,6 @@ int readmenu (char *name,int key){                     //  *+ readmenu ()  Сч�
 	char           *file;
 	char           *menu;
 	int             key_RSTDIN=0;
-	int             I;
 
 	if (key){
 		file = File;
@@ -95,7 +95,8 @@ int readmenu (char *name,int key){                     //  *+ readmenu ()  Сч�
 		}
 	}
 	fgets (b0, L_SIZ, fp);
-	I=fMM();
+	if ( 0 == MMi )
+	   MMi=fMM();
 	if(*b0 != '#' ){
 	   if(*b0 != '{' ){
 		   grep (File, ON);
@@ -159,13 +160,12 @@ old:            i = strlen (p = b0);
 				p[i + 1] = '\0';
 				s_tab (0, ++Str, i, p + 1, ON);
 			}
+		    case ';':           /* Комментарий */
 			continue;
 		    case '%':           /* МенюМышь */
 			if (Maska && Maska->dir & OLD) {
-			   i = I;
-			   i = i > Xdim - Maska->x ? Xdim - Maska->x : i;
-			   p[i + 1] = '\0';
-			   s_tab (0, ++Str, i, MM, ON);
+			   i = MMi > Xdim - Maska->x ? Xdim - Maska->x : MMi;
+			   s_tab (0, ++Str, i, MM+1, ON);
 			   Maska->MM = Str;
 			}
 			continue;
@@ -195,7 +195,6 @@ old:            i = strlen (p = b0);
 		} else if (Maska->dir & OLD) {
 			if (++Str < Ydim)
 				s_pol (Maska->x == 0 ? 20 : 0, Str, i, p);
-//                                s_pol (Maska->x == 0 ? 20 : 0, Str, i, p, ON);
 		} else if (Maska->dir & HLP) {
 			ss = index (p, ':');
 			*ss++ = '\0';

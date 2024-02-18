@@ -155,7 +155,7 @@ int main (argc, argv)
 	Rew = ON;
 	Del = ON;
 	dpo (_CL);
-	if (jmpErr = setjmp (Ext) || setjmp (Env)) {
+	if ( (jmpErr = setjmp (Ext)) || setjmp (Env)) {
 stop:
 		dpend ();
 		mu_set (OFF);
@@ -197,6 +197,7 @@ struct maska *choise (struct maska *m){      //  *+ choise ()    Выбор в �
 	register int    cc;          /* команда */
 	struct pol     *to, *pol, *save, *pl;
 	int             c,poz,y;
+	struct maska *mm, *mt;
 	static char    *acts[] = {
 				  "F1", "Esc", "F3", "F9", "F12", "RETURN", NULL
 	};
@@ -232,6 +233,7 @@ struct maska *choise (struct maska *m){      //  *+ choise ()    Выбор в �
 	pol = m->pol;
 	mousemask(ALL_MOUSE_EVENTS, NULL); // Get all the mouse events
 	keypad(Win, TRUE);
+//        err("<<<%s>>>",m->menu);
 	for (;;) {
 		e_item (pol);
 		c = dpi ();
@@ -248,14 +250,31 @@ BEGIN:
 				   switch (MenuMouse(event.x - m->x)){
 				       case  1: longjmp (Ext, _K0); break;
 				       case  2: goto goEsc        ; break;
-				       case  3: goto goK3         ; break;
-				       case  4: goto goCR         ; break;
+				       case  3: goto goCR         ; break;
+				       case  4: goto goK3         ; break;
 				   }
 			       }
 			   }
+			   for (mm = mt = Head; mt != NULL; mt = mt->next){
+			       if (mt->dir & DISPLAY){
+//                           err("<<<%s %d %d   %d %d  %d %d >>>",mt->menu,event.x,event.y ,mt->x,mt->y ,mt->xW,mt->yW);
+				   if ( event.x >  mt->x  && event.y >  mt->y  // мышь в окне
+				     && event.x <= mt->xW && event.y <= mt->yW  ){
+//                                       err("<<<%s>>>",mt->menu);
+				       mm = mt;
+				   }
+			       }
+			   }
+			   if ( Maska != mm ){
+//                                err("<<<%s %d %d   %d %d  %d %d >>>",mm->menu,event.x,event.y ,mm->x,mm->y ,mm->xW,mm->yW);
+				l_item ();/* стерли пометку */
+				Maska = m = mm;
+				pol = m->pol;
+				y = event.y - m->y;
+			   }
 			   for (to = pol->next; to != pol; to = to->next){
 				if ( y == to->y && to->key & DSP ){
-				   l_item ();
+				   l_item ();/* стерли пометку */
 				   pol = to;
 				   break;
 				}
@@ -317,7 +336,8 @@ goEsc:                  dpo (' ');     /* стирание метки MARK */
 			c = (long int) m;
 			goto execut;
 		    case _cr:          /* выполнить операцию */
-goCR:                  dpo (' ');      /* стирание метки MARK */
+goCR:                   dpo (' ');      /* стирание метки MARK */
+			l_item ();/* стерли пометку */
 			if (Maska->dir & MSK
 			     && ( pol->d == NULL || pol->key & ENV )){
 				poz = 0;
@@ -401,7 +421,8 @@ goK3:                   dpbeg();
 			}
 			continue;
 		}                       /* endswitch */
-		display (OFF);
+		display ();
+//                display (OFF);
 	}				/* endfor(;;) */
 }
 int execute (register struct pol *pol){         //   *+ execute ()   Выполнение строк меню ( старое )
@@ -446,7 +467,7 @@ int execute (register struct pol *pol){         //   *+ execute ()   Выпол�
 		   le = strlen(pol->e);
 		   if ( le < lb){
 		       FREE   (pol->e);
-		       MALLOC (pol->e, buf, lb);
+		       MALLOC (pol->e, buf, lb+1);
 		   }
 		   for (num = 0, se = pol->e; 0 != buf[num] ; num++ ,se++) *se = buf[num];
 		   *se = '\0';
@@ -519,6 +540,7 @@ int dosystem (char *s,int key){        //  *+ dosystem ()  Выполнить к
 	DPIS ("Минуточку...\n");
 	dpend ();    /**/
 	signal (SIGCLD, SIG_DFL);
+	system ("clear");
 	i = system (s) >> 8;
 	signal (SIGCLD, chld_int);
 	dpbeg ();    /**/

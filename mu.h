@@ -68,6 +68,7 @@ struct maska {
 	char           *prl;            /* Запустить в параллель */
 	char            divide;         /* Символ разделитель полей */
 	int             x, y;           /* Точка привязки */
+	int             xW, yW;         /* Размер окна */
 	int             dir;            /* Управление */
 	int             MM;             // Строка меню mouse // F10-выход ESC-вверх F3-перерисовать
 	struct task {
@@ -136,7 +137,8 @@ long            time ();
 #define F_CLEAR (int)_F7
 #define F_HELP  (int)_F15
 #define F_DO    (int)_F16
-#define RSTDIN  "stdin"
+//#define RSTDIN  "stdin"
+#define RSTDIN  "root"
 
 extern WINDOW  *Win;
 

@@ -5,8 +5,8 @@ void s_pol (int x,int y,int l,char *p){      // *+ s_pol()      Запомнит
 	register char  *s;
 	static struct pol *save;
 	static short    nom;
-	static char   utf8[] ="йцукенгшщзхъфывапролджэячсмитьбюЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭ/ЯЧСМИТЬБЮ";
-	static char   ascii[]="qwertyuiop[]asdfghjkl;'zxcvbnm,.QWERTYUIOP[]ASDFGHJKL;'<ZXCVBNM,.";
+	static char   utf8[] ="йцукенгшщзхъфывапролджэячсмитьбюЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭ/ЯЧСМИТЬБЮ.ёЁ";
+	static char   ascii[]="qwertyuiop[]asdfghjkl;'zxcvbnm,.QWERTYUIOP[]ASDFGHJKL;'<ZXCVBNM,./`~";
 
 	n = (struct pol *) malloc (SIZ(pol));
 	if (Maska->pol == NULL) {
@@ -38,7 +38,7 @@ void s_pol (int x,int y,int l,char *p){      // *+ s_pol()      Запомнит
 			CALLOC (n->t, p, n->l);
 			n->d = NULL;
 		}
-		if ( fUTF8(n->t)){
+		if (fUTF8(n->t)){
 		   n->h=0;
 		   for(s = utf8 ; *s != 0; s++  ){
 		      if( *(s) == *(n->t+1) ){
@@ -62,6 +62,9 @@ void s_pol (int x,int y,int l,char *p){      // *+ s_pol()      Запомнит
 	save->next = n;
 	n->back = save;
 	save = n->next->back = n;
+	l = l - tUTF8(p ,l) + 1;
+	Maska->xW = l+Maska->x > Maska->xW ? l+Maska->x : Maska->xW ;
+	Maska->yW = y+Maska->y > Maska->yW ? y+Maska->y : Maska->yW ;
 }
 void s_tab (int x,int y,int l,char *p,int key){     //  *+ s_tab()      Запомнить таблицу или рамку
 	register struct poz *n;  /**/
@@ -83,6 +86,9 @@ void s_tab (int x,int y,int l,char *p,int key){     //  *+ s_tab()      Запо
 	n->l = l;
 	CALLOC (n->t, p, n->l);
 	n->next = NULL;
+	l = l - tUTF8(p ,l) +1 ;
+	Maska->xW = l+Maska->x > Maska->xW ? l+Maska->x : Maska->xW ;
+	Maska->yW = y+Maska->y > Maska->yW ? y+Maska->y : Maska->yW ;
 }
 struct maska *grep (char *menu,int key){        // *+ grep()       Поиск меню по дереву или возврат адреса пустой ячейки.
 	register struct maska *l;
@@ -178,8 +184,10 @@ void drawmenu (struct maska   *m, int key_env){  // *+ drawmenu()   Рисова
 	for (p = m->tab; p != NULL; p = p->next) {	/* Постоянная часть */
 		dpp (m->x + p->x, m->y + p->y);
 		dps (p->t);
-		if (m->dir & OLD)
-			dpn (Xdim - p->l - (m->x + p->x) + 1, ' ');
+		if (m->dir & OLD){
+//                   dpn ( m->xW - p->l - (m->x + p->x) + tUTF8(p->t, p->l) -1 , ' ');
+		   dpn ( Xdim - p->l - (m->x + p->x) + tUTF8(p->t, p->l) -1 , ' ');
+		}
 	}
 	if (m->dir & OLD) {
 		attroff(A_REVERSE);
@@ -271,10 +279,12 @@ void display (){       //  *+ display()    Рисовать все меню
 		Rew = ON;
 		return;
 	}
-	for (m = Head; m != NULL; m = m->next)
-		if (m->dir & DISPLAY)
+	for (m = Head; m != NULL; m = m->next){
+		if (m->dir & DISPLAY){
 			drawmenu (m, Draw);
-       Draw = OFF;
+		}
+	}
+	Draw = OFF;
 }
 void delmenu (struct maska   *m,int key){   //  *+ delmenu ()   Тереть меню
 	register char  *c;
