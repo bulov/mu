@@ -7,6 +7,7 @@ void mu_set(int key){      //  *+ mu_set()     Извлеч и сохранит�
 	register char  *cp, *dp, *en, *ev;
 	int             i;
 	char           *Setenv = ".setenv.u";   /* Сохранить окружение */
+	char           *Config = "/.config/";  /* Читать окружение $Home */
 	char           *MU = "MU";              /* Первая переменная */
 	char            tmp[L_SIZ],buf[L_SIZ], *val, *index();
 	FILE           *fp;		/* Дескриптор файла v */
@@ -25,7 +26,23 @@ void mu_set(int key){      //  *+ mu_set()     Извлеч и сохранит�
 		   }
 		}
 		setenv  (MU, MU, 1);
-			if ((fp = fopen (Setenv, "r")) != NULL) {
+		if ((fp = fopen (strcat(strcat(strcpy(tmp,getenv("HOME")),Config),Setenv), "r")) != NULL) {
+			while (fgets (buf, L_SIZ, fp) != NULL) {
+				if (!(i = strlen (buf)))
+					continue;
+				if (buf[i - 1] == '\n')
+					buf[i - 1] = '\0';
+				val = index (buf, '=');
+				if( val != 0 ){
+				   *val = '\0';
+				   if ( NULL == getenv (buf)){           // если нет
+					setenv (buf, val + 1, 1);
+				   }
+				}
+			}
+		    fclose (fp);
+		}
+		if ((fp = fopen (Setenv, "r")) != NULL) {
 			while (fgets (buf, L_SIZ, fp) != NULL) {
 				if (!(i = strlen (buf)))
 					continue;

@@ -23,7 +23,7 @@ char    head[] = "\n\
 -+  #ИНСТРУКЦИЯ                           - помещается в область help-а.
 -+  @xx yy                                - координаты привязки меню
 -+  !ДЕЙСТВИЕ                             - выполняется при входе в это меню.
--+  ТЕКСТ[       ]:$Environ               - издать setenv и сохранить .save.u
+-+  ТЕКСТ[       ]:$Environ               - издать setenv и сохранить .setenv.u
 -+  ТЕКСТ[       ]:\$Environ              - \$ если вызываем из bash  mu <<EOL
 -+  ТЕКСТ:&                               - перенести в строку редактирования
 -+  ТЕКСТ:ДЕЙСТВИЕ                        - выполнить указанное действие.
@@ -248,10 +248,13 @@ BEGIN:
 				   goto goCR;
 			       }else if ( y == m->MM ) {  //строка менюMышь
 				   switch (MenuMouse(event.x - m->x)){
-				       case  1: longjmp (Ext, _K0); break;
-				       case  2: goto goEsc        ; break;
-				       case  3: goto goCR         ; break;
-				       case  4: goto goK3         ; break;
+				       case  1: longjmp (Ext, _K0); // F10-Выход
+				       case  2: goto goEsc        ; // ESC-Вверх
+				       case  3: goto goCR         ; // Enter-Делать
+				       case  4: goto goK3         ; // F3-Перерисовать
+				       case  5:                     // F9-bash
+					   dosystem ("/bin/bash -f", OFF);
+					   goto goK3;
 				   }
 			       }
 			   }

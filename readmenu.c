@@ -2,7 +2,7 @@
 #include <ctype.h>
 #define N_HELP (15 * sizeof (char*))
 static int      Com;                    /* Обработка командочек */
-char    MM[] = "   F10-Выход ESC-Вверх Enter-Делать F3-Перерисовать ";
+char    MM[] = "   F10-Выход ESC-Вверх Enter-Делать F3-Перерисовать F9-bash ";
 int     MMx[10];                       // столбец привязки
 int     MMi;                           // ключь первого прохода
 
@@ -33,7 +33,7 @@ int MenuMouse(int x){
    return(0 == MMx[i]?-1:i);
 }
 char*
-ssetenv(char *p)
+ssetenv(char *p)                       //setenv shXX=01;setenv SHXX=02
 {
    char *nam, *val, *stp = p,  *s;
    char    buf[L_SIZ];
@@ -42,7 +42,7 @@ ssetenv(char *p)
    if(!strncmp(p,"setenv",6)){
        s = strcpy(buf,p);
        if(nam=index(s,' ')){
-	   if(val=index(++nam,' ')){
+	   if(val=index(++nam,'=')){
 	       *val = 0;
 	       if(stp=index(++val,';')){
 		   *stp++ = 0;
