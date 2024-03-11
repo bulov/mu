@@ -216,7 +216,7 @@ struct maska *choise (struct maska *m){      //  *+ choise ()    Выбор в �
 	if (m->dir & HLP)
 		return((struct maska *)ON);
 	if(m->make)
-		dosystem(m->make,OFF);
+	       dosystem(m->make,OFF);
 	if(m->dir & RUN )
 		send_task(0,0);   /* Запуск задачи */
 	if(m->dir & TAB ){
@@ -264,7 +264,10 @@ BEGIN:
 				   if ( event.x >  mt->x  && event.y >  mt->y  // мышь в окне
 				     && event.x <= mt->xW && event.y <= mt->yW  ){
 //                                       err("<<<%s>>>",mt->menu);
-				       mm = mt;
+				       if ( mm->x < mt->x && mm->y < mt->y
+					 && mm->xW > mt->xW && mm->yW > mt->yW ){
+					   mm = mt;   // Из первого меньшего внутри
+				       }
 				   }
 			       }
 			   }
@@ -536,14 +539,14 @@ int dosystem (char *s,int key){        //  *+ dosystem ()  Выполнить к
 	int             i;
 	char           *ssetenv();
 
-	/* Смотрим setenv XXXX yyyy */
-	if(!(s=ssetenv(s)))
+	if(!(s=ssetenv(s)))    /* Смотрим !setenv XXXX=yyyy */
 	   return(0);
 	dpo (_CL);
 	DPIS ("Минуточку...\n");
 	dpend ();    /**/
 	signal (SIGCLD, SIG_DFL);
-	system ("clear");
+	system ("clear" );
+	system ("echo Минуточку..." );
 	i = system (s) >> 8;
 	signal (SIGCLD, chld_int);
 	dpbeg ();    /**/

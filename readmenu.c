@@ -39,7 +39,8 @@ ssetenv(char *p)                       //setenv shXX=01;setenv SHXX=02
    char    buf[L_SIZ];
 
    for (; *p == ' ' && *p; p++);      /* Лидирующие пробелы */
-   if(!strncmp(p,"setenv",6)){
+//   if(!strncmp(p,"setenv",6)){
+   if(!strncmp(p,"export",6)){        // for bash
        s = strcpy(buf,p);
        if(nam=index(s,' ')){
 	   if(val=index(++nam,'=')){
@@ -169,13 +170,13 @@ old:            i = strlen (p = b0);
 			   Maska->MM = Str;
 			}
 			continue;
-		    case '!':		/* команды, выполняемые при входе в меню */
+		    case '!':           /* команда, выполняемая при входе в меню */
 			Maska->make = (char*)malloc (i);
 			strcpy (Maska->make, p + 1);
 			continue;
-		    case 's':           /* setenv */
-		       if( (p = ssetenv(p) ) )
-			   continue;
+//                    case 's':           /* setenv */
+//                       if( (p = ssetenv(p) ) )
+//                           continue;
 		}
 		if (Maska->dir & MSK) {
 			for (from = b0 - 1, ss = up - 1; *++ss = *++from;) {
