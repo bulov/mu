@@ -69,6 +69,7 @@ struct maska {
 	char            divide;         /* Символ разделитель полей */
 	int             x, y;           /* Точка привязки */
 	int             xW, yW;         /* Размер окна */
+	int             sq;             /* площадь окна */
 	int             dir;            /* Управление */
 	int             MM;             // Строка меню mouse // F10-выход ESC-вверх F3-перерисовать
 	struct task {

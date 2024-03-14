@@ -264,8 +264,7 @@ BEGIN:
 				   if ( event.x >  mt->x  && event.y >  mt->y  // мышь в окне
 				     && event.x <= mt->xW && event.y <= mt->yW  ){
 //                                       err("<<<%s>>>",mt->menu);
-				       if ( mm->x < mt->x && mm->y < mt->y
-					 && mm->xW > mt->xW && mm->yW > mt->yW ){
+				       if ( mm->sq > mt->sq ){
 					   mm = mt;   // Из первого меньшего внутри
 				       }
 				   }

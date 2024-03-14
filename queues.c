@@ -65,6 +65,7 @@ void s_pol (int x,int y,int l,char *p){      // *+ s_pol()      Запомнит
 	l = l - tUTF8(p ,l) + 1;
 	Maska->xW = l+Maska->x > Maska->xW ? l+Maska->x : Maska->xW ;
 	Maska->yW = y+Maska->y > Maska->yW ? y+Maska->y : Maska->yW ;
+	Maska->sq = (Maska->xW - Maska->x) * (Maska->yW - Maska->y) ;
 }
 void s_tab (int x,int y,int l,char *p,int key){     //  *+ s_tab()      Запомнить таблицу или рамку
 	register struct poz *n;  /**/
