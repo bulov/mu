@@ -258,14 +258,14 @@ BEGIN:
 				   }
 			       }
 			   }
-			   for (mm = mt = Head; mt != NULL; mt = mt->next){
+			   for (mm=m , mt = Head; mt != NULL; mt = mt->next){
 			       if (mt->dir & DISPLAY){
-//                           err("<<<%s %d %d   %d %d  %d %d >>>",mt->menu,event.x,event.y ,mt->x,mt->y ,mt->xW,mt->yW);
+//                           err("<<<%s %d %d   %d %d  %d %d  MM=%d y=%d>>>",mt->menu,event.x,event.y ,mt->x,mt->y ,mt->xW,mt->yW,m->MM,y);
 				   if ( event.x >  mt->x  && event.y >  mt->y  // мышь в окне
 				     && event.x <= mt->xW && event.y <= mt->yW  ){
-//                                       err("<<<%s>>>",mt->menu);
 				       if ( mm->sq > mt->sq ){
 					   mm = mt;   // Из первого меньшего внутри
+//                                           err("<<<%s>>>",mt->menu);
 				       }
 				   }
 			       }
