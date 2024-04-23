@@ -2,7 +2,7 @@
 #include "tty.h"
 void s_pol (int x,int y,int l,char *p){      // *+ s_pol()      Запомнить поля
 	register struct pol *n;
-	register char  *s;
+	register char  *s, *S;
 	static struct pol *save;
 	static short    nom;
 	static char   utf8[] ="йцукенгшщзхъфывапролджэячсмитьбюЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭ/ЯЧСМИТЬБЮ.ёЁ";
@@ -23,7 +23,18 @@ void s_pol (int x,int y,int l,char *p){      // *+ s_pol()      Запомнит
 		n->key = DSP | LEFT;
 	n->nom = nom++;
 	if (Maska->dir & OLD) {
-		GREP(s,p,':');
+		s = p;
+		while ( *s ){      // экранирование :
+		   for ( ; *s && *s != ':'; s++ );
+		   if ( *s == ':') {
+		       if( '\\' == *(s-1) ){
+			   for ( S=s-1 ; *S = *(S+1) ; S++);
+			   s++;
+			   continue;
+		       }
+		       break;
+		   }
+		}
 		if (*s == ':') {
 			/* найти точку и взять уровень */
 			if( *(s -1)  == '.')
@@ -185,8 +196,9 @@ void drawmenu (struct maska   *m, int key_env){  // *+ drawmenu()   Рисова
 	for (p = m->tab; p != NULL; p = p->next) {	/* Постоянная часть */
 		dpp (m->x + p->x, m->y + p->y);
 		dps (p->t);
-		if (m->dir & OLD){
-//                   dpn ( m->xW - p->l - (m->x + p->x) + tUTF8(p->t, p->l) -1 , ' ');
+ //               dpo('-');
+//                err("%d",p->x);
+		if (m->dir & OLD && 0 == p->x ){    // keyX in readmenu.c
 		   dpn ( Xdim - p->l - (m->x + p->x) + tUTF8(p->t, p->l) -1 , ' ');
 		}
 	}
@@ -252,7 +264,6 @@ void draw_pol (struct maska   *m, int key_env){ //  *+ draw_pol()   Рисова
 		   err("пустое поле ENV ждем 'текст[   ]:$ENV' пришло '%s'", l->t );
 	       }
 	   }
-//           if (0x0 != l && ( l->key & DATE || l->key & TIM)  ) {  /* подставить время дату */
 	   if (( l->key & DATE || l->key & TIM)  ) {  /* подставить время дату */
 	       char mas[128];
 	       tab_date(mas,l->d,1);

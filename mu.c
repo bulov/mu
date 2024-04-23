@@ -82,7 +82,7 @@ char    head[] = "\n\
 #include <unistd.h>
 #include <setjmp.h>
 #include <time.h> // time_t
-#define BACK    1			/* отступ влево для пометки       */
+#define BACK     1                      /* отступ влево для пометки       */
 #define MARK    '>'			/* символ пометки */
 #define unify( c) ( ((c) & ~0240 ) & 0377 )
 /*
@@ -258,14 +258,16 @@ BEGIN:
 				   }
 			       }
 			   }
-			   for (mm=m , mt = Head; mt != NULL; mt = mt->next){
+//                           for (mm=m , mt = Head; mt != NULL; mt = mt->next){
+			   for (mm = mt = Head; mt != NULL; mt = mt->next){
 			       if (mt->dir & DISPLAY){
-//                           err("<<<%s %d %d   %d %d  %d %d  MM=%d y=%d>>>",mt->menu,event.x,event.y ,mt->x,mt->y ,mt->xW,mt->yW,m->MM,y);
+///**/                               err("<<<%s %d %d   %d %d  %d %d  MM=%d y=%d %d %d >>>",mt->menu,event.x,event.y ,mt->x,mt->y ,mt->xW,mt->yW,m->MM,y,mm->sq,mt->sq);
 				   if ( event.x >  mt->x  && event.y >  mt->y  // мышь в окне
 				     && event.x <= mt->xW && event.y <= mt->yW  ){
+///**/                               err("<<<%s %d %d   %d %d  %d %d  MM=%d y=%d %d %d >>>",mt->menu,event.x,event.y ,mt->x,mt->y ,mt->xW,mt->yW,m->MM,y,mm->sq,mt->sq);
 				       if ( mm->sq > mt->sq ){
 					   mm = mt;   // Из первого меньшего внутри
-//                                           err("<<<%s>>>",mt->menu);
+///**/                                       err("<<<%s>>>",mt->menu);
 				       }
 				   }
 			       }

@@ -68,7 +68,7 @@ int readmenu (char *name,int key){                     //  *+ readmenu ()  Сч�
 	char          **pt, **pd;
 	char           *file;
 	char           *menu;
-	int             key_RSTDIN=0;
+	int             key_RSTDIN=0,keyX;
 
 	if (key){
 		file = File;
@@ -114,6 +114,7 @@ old:            i = strlen (p = b0);
 		    case 0:
 			continue;
 		    case '{':		/* Начало описания маски */
+			keyX=0;
 			if ((ss = index (++p, ':')) == 0)
 				ss = menu - 1;  /* Имя */
 			grep (++ss, ON);
@@ -159,7 +160,7 @@ old:            i = strlen (p = b0);
 			if (Maska && Maska->dir & OLD) {
 				i = i > Xdim - Maska->x ? Xdim - Maska->x : i;
 				p[i + 1] = '\0';
-				s_tab (0, ++Str, i, p + 1, ON);
+				s_tab (keyX, ++Str, i, p + 1, ON);
 			}
 		    case ';':           /* Комментарий */
 			continue;
@@ -195,7 +196,7 @@ old:            i = strlen (p = b0);
 			fpm (up, lo, du);
 		} else if (Maska->dir & OLD) {
 			if (++Str < Ydim)
-				s_pol (Maska->x == 0 ? 20 : 0, Str, i, p);
+				s_pol (keyX=(0==Maska->x?20:1), Str, i, p);
 		} else if (Maska->dir & HLP) {
 			ss = index (p, ':');
 			*ss++ = '\0';
