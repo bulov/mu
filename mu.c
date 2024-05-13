@@ -242,6 +242,7 @@ BEGIN:
 		switch (c) {
 		   case KEY_MOUSE:
 		       if(getmouse(&event) == OK){   /* When the user clicks mouse button */
+			   int key=0;
 			   y = event.y - m->y;
 			   if ( event.bstate & BUTTON1_DOUBLE_CLICKED ){
 			       if ( y == pol->y ){
@@ -258,22 +259,22 @@ BEGIN:
 				   }
 			       }
 			   }
-//                           for (mm=m , mt = Head; mt != NULL; mt = mt->next){
-			   for (mm = mt = Head; mt != NULL; mt = mt->next){
+			   for (mt = Head; mt != NULL; mt = mt->next){
 			       if (mt->dir & DISPLAY){
-///**/                               err("<<<%s %d %d   %d %d  %d %d  MM=%d y=%d %d %d >>>",mt->menu,event.x,event.y ,mt->x,mt->y ,mt->xW,mt->yW,m->MM,y,mm->sq,mt->sq);
+				   if ( 0 == key++ ) mm = mt;
+///**/                               err("<<<1 %s %d %d   %d %d  %d %d  MM=%d y=%d %d %d >>>",mt->menu,event.x,event.y ,mt->x,mt->y ,mt->xW,mt->yW,m->MM,y,mm->sq,mt->sq);
 				   if ( event.x >  mt->x  && event.y >  mt->y  // мышь в окне
 				     && event.x <= mt->xW && event.y <= mt->yW  ){
-///**/                               err("<<<%s %d %d   %d %d  %d %d  MM=%d y=%d %d %d >>>",mt->menu,event.x,event.y ,mt->x,mt->y ,mt->xW,mt->yW,m->MM,y,mm->sq,mt->sq);
+///**/                               err("<<<2 %s %d %d   %d %d  %d %d  MM=%d y=%d %d %d >>>",mt->menu,event.x,event.y ,mt->x,mt->y ,mt->xW,mt->yW,m->MM,y,mm->sq,mt->sq);
 				       if ( mm->sq > mt->sq ){
 					   mm = mt;   // Из первого меньшего внутри
-///**/                                       err("<<<%s>>>",mt->menu);
+///**/                                       err("<<<3 %s>>>",mt->menu);
 				       }
 				   }
 			       }
 			   }
 			   if ( Maska != mm ){
-//                                err("<<<%s %d %d   %d %d  %d %d >>>",mm->menu,event.x,event.y ,mm->x,mm->y ,mm->xW,mm->yW);
+///**/                                err("<<<4 %s %d %d   %d %d  %d %d >>>",mm->menu,event.x,event.y ,mm->x,mm->y ,mm->xW,mm->yW);
 				l_item ();/* стерли пометку */
 				Maska = m = mm;
 				pol = m->pol;
