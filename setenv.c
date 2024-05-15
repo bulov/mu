@@ -72,7 +72,7 @@ void mu_set(int key){      //  *+ mu_set()     Извлеч и сохранит�
 		   for (dp++, en=tmp; '=' != *dp && 0 != *dp;en++,dp++)
 			  *en = *dp;
 		   *en = 0;
-		   if ( NULL != (ev=getenv (en=tmp))){
+		   if ( NULL != (ev=getenv (en=tmp)) && 0 != *ev ){
 //                   printf("<%s=%s>\n",en,ev);
 			fputs (en,   fp);
 			fputc ('=',  fp);

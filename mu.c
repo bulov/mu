@@ -242,7 +242,6 @@ BEGIN:
 		switch (c) {
 		   case KEY_MOUSE:
 		       if(getmouse(&event) == OK){   /* When the user clicks mouse button */
-			   int key=0;
 			   y = event.y - m->y;
 			   if ( event.bstate & BUTTON1_DOUBLE_CLICKED ){
 			       if ( y == pol->y ){
@@ -259,9 +258,9 @@ BEGIN:
 				   }
 			       }
 			   }
-			   for (mt = Head; mt != NULL; mt = mt->next){
+			   for (mm=(struct maska *)Null , mt = Head; mt != NULL; mt = mt->next){
 			       if (mt->dir & DISPLAY){
-				   if ( 0 == key++ ) mm = mt;
+				   if ( (struct maska *)Null == mm ) mm = mt;
 ///**/                               err("<<<1 %s %d %d   %d %d  %d %d  MM=%d y=%d %d %d >>>",mt->menu,event.x,event.y ,mt->x,mt->y ,mt->xW,mt->yW,m->MM,y,mm->sq,mt->sq);
 				   if ( event.x >  mt->x  && event.y >  mt->y  // мышь в окне
 				     && event.x <= mt->xW && event.y <= mt->yW  ){
@@ -273,7 +272,7 @@ BEGIN:
 				   }
 			       }
 			   }
-			   if ( Maska != mm ){
+			   if ( (struct maska *)Null != mm && Maska != mm ){
 ///**/                                err("<<<4 %s %d %d   %d %d  %d %d >>>",mm->menu,event.x,event.y ,mm->x,mm->y ,mm->xW,mm->yW);
 				l_item ();/* стерли пометку */
 				Maska = m = mm;
@@ -304,7 +303,8 @@ BEGIN:
 			      case _F11:case _F12:case _F13:
 		    case _F14:case _F16:case _F17:case _F18:
 		    case _F19:case _F20:
-			if (pl = (struct pol*) setjmp (Exec)) {
+//                        if (pl = (struct pol*) setjmp (Exec)) {
+			if (pl = ( struct pol *)setjmp (Exec)) {
 				c = execute(pl);
 				FREE(pl->d);
 				FREE(pl);
