@@ -260,11 +260,11 @@ BEGIN:
 			   }
 			   for (mm=(struct maska *)Null , mt = Head; mt != NULL; mt = mt->next){
 			       if (mt->dir & DISPLAY){
-				   if ( (struct maska *)Null == mm ) mm = mt;
 ///**/                               err("<<<1 %s %d %d   %d %d  %d %d  MM=%d y=%d %d %d >>>",mt->menu,event.x,event.y ,mt->x,mt->y ,mt->xW,mt->yW,m->MM,y,mm->sq,mt->sq);
 				   if ( event.x >  mt->x  && event.y >  mt->y  // мышь в окне
 				     && event.x <= mt->xW && event.y <= mt->yW  ){
 ///**/                               err("<<<2 %s %d %d   %d %d  %d %d  MM=%d y=%d %d %d >>>",mt->menu,event.x,event.y ,mt->x,mt->y ,mt->xW,mt->yW,m->MM,y,mm->sq,mt->sq);
+				       if ( (struct maska *)Null == mm ) mm = mt;
 				       if ( mm->sq > mt->sq ){
 					   mm = mt;   // Из первого меньшего внутри
 ///**/                                       err("<<<3 %s>>>",mt->menu);
