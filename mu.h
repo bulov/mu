@@ -178,14 +178,14 @@ void s_tab (int x,int y,int l,char *p,int key);        //  *+ s_tab()      За�
 int  help (int x,int y,char **list,char **list2,int key);
 int  com (register char *p);
 void fpm (char *u,char *l,char *d);
-void s_pol (int x,int y,int l,char *p);                // *+ s_pol()       Запомнить поля
+void s_pol (int x,int y,int l,char *p);                //  *+ s_pol()      Запомнить поля
 void mu_set(int key);                                  //  *+ mu_set()     Извлеч и сохранить внешние переменные
-struct maska *choise (struct maska *m);                         //  *+ choise ()    Выбор в меню
+struct maska *choise (struct maska *m);                //  *+ choise ()    Выбор в меню
 int  dosystem (char *s,int key);                       //  *+ dosystem ()  Выполнить команду системы.
 void e_item (register struct pol *k);                  //  *+ e_item ()    Выделение строк
 void l_item ();                                        //  *+ l_item ()    Гашение строки
-void drawline (struct maska *ms);                      // *+ drawline ()   Рисовать строку
-int  execute (register struct pol *pol);               //   *+ execute ()  Выполнение строк меню ( старое )
+void drawline (struct maska *ms);                      //  *+ drawline ()  Рисовать строку
+int  execute (register struct pol *pol);               //  *+ execute ()   Выполнение строк меню ( старое )
 int  in_esc (int c);                                   //  *+ in_esc()     Выбрать и выполнить команду
 void delmenu (struct maska   *m,int key);              //  *+ delmenu ()   Тереть меню
 int red (int x,int y,char *s,int mx,int pos);

@@ -410,7 +410,6 @@ goK3:                   dpbeg();
 				poz = 1;
 		 ED:            Red = R_SO | R_US | R_TAIL | R_NEXT ;
 				c = red (m->x + pol->x, m->y + pol->y, pol->e, pol->l, poz);
-//                                c = red (m->x + pol->x, m->y + pol->y, pol->t, pol->l, poz);
 				if( c == (int) _cr )
 					c = (int) KEY_RIGHT;
 				if(pol->key & ENV)
@@ -457,18 +456,18 @@ int execute (register struct pol *pol){         //   *+ execute ()   Выпол�
 		   for (num = 0;  *sn != ']' && 0 != *s; sn++ , num++ );
 		   x = m->x + pol->x + (ss - pol->t) - tUTF8(pol->t ,ss - pol->t);
 		   y = m->y + pol->y;
-		   Red = R_SO | R_TAIL | R_NEXT ;
-		   red (x+2, y, buf, num-1, 0);            //   V
+		   Red = R_SO | R_TAIL | R_NEXT ;          //Удаление лидирующих и хвостовых пробелов blanks
+		   red (x+2, y, buf, num-1, 0);            //     b
 		   for (b=buf; ' ' == *b && 0 != *b; b++)  // "   xxxx   "
-			;                                  //       V
-		   for (v=buf; 0 != *b; v++, b++)          // "xxxx      "
+			;                                  //         v  b
+		   for (v=buf; 0 != *b; v++, b++)          // "xxxx   "
 		       *v=*b;                              //
-		       *v=0;                               //          V
+		       *v--=0;                             //        v
 		   for (; b != v ; b--)                    // "xxxx   000"
-			*b=0;                              //       V
+			*b=0;                              //      b
 		   for (; ' ' == *b ; b--)                 // "xxxx000000"
 		       *b=0;
-//                   printf("<%s><%s><%s>\n",buf,v,b);
+//                 err("<<< <%s><%s><%s> >>>\n",buf,v,b);
 		   setenv (s + 1, buf, 1);
 		   setenv (strcat(strcpy(tmp,"MU_"),s+1), "", 1);
 		   lb = strlen(buf);
